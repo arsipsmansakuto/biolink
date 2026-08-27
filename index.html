@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio Link Pro Dashboard v5.0 (Ultimate Enterprise)</title>
+    
+    <!-- Favicon Inline SVG -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Cropper.js for Image Cropping -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Dynamic Custom User Style Tag -->
+    <style id="customUserCssTag"></style>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .btn-effect-scale {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+        }
+        .btn-effect-scale:hover {
+            transform: translateY(-2px) scale(1.01);
+        }
+        .btn-effect-scale:active {
+            transform: translateY(1px) scale(0.99);
+        }
+
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* Custom Scrollbar for sleek layout */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body id="appBody" class="flex flex-col items-center justify-start min-h-screen p-3 sm:p-6 transition-all duration-300 relative">
+
+    <!-- PUBLIC BIO LINK CONTAINER (CLEAN VIEW WITHOUT BOX FRAME) -->
+    <main id="mainPublicContainer" class="w-full max-w-md mx-auto flex flex-col items-center text-center space-y-6 pt-4 sm:pt-6 pb-32 sm:pb-12 relative z-10 transition-all duration-300">
+        
+        <!-- Profile Header -->
+        <header class="flex flex-col items-center space-y-3 w-full">
+            <div class="relative group">
+                <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="Avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white/80 shadow-xl transition-transform duration-300 group-hover:scale-105">
+            </div>
+            <div class="space-y-1 px-4">
+                <h1 id="userName" class="text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-sm flex items-center justify-center gap-1.5">
+                    <span>Nama Anda</span>
+                    <span id="verifiedBadge" class="hidden text-indigo-400 text-lg sm:text-xl" title="Akun Terverifikasi">☑️</span>
+                </h1>
+                <p id="userBio" class="text-sm sm:text-base font-medium opacity-90 leading-relaxed max-w-md mx-auto">Digital Creator & Innovator</p>
+            </div>
+        </header>
+
+        <!-- Dynamic Links & Components List -->
+        <section id="componentsContainer" class="w-full space-y-3.5 pt-2">
+            <!-- Dynamic Components Rendered Here via JS -->
+        </section>
+
+    </main>
+
+    <!-- FLOATING ACTION BUTTONS (FOR ADMIN) -->
+    <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col sm:flex-row gap-2.5 shadow-2xl">
+        <button id="btnLivePreview" onclick="openLivePreview()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md transition flex items-center justify-center gap-2 text-xs border border-white/20 active:scale-95">
+            <span>📱</span> Live Preview
+        </button>
+        <button id="btnManageBio" onclick="openAdminModal()" class="bg-slate-900/95 hover:bg-slate-900 text-white font-bold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md transition flex items-center justify-center gap-2 text-xs border border-white/20 active:scale-95">
+            <span>⚙️</span> Kelola Bio Link
+        </button>
+    </div>
+
+    <!-- ADMIN DASHBOARD MODAL -->
+    <div id="adminModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 hidden">
+        <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] border border-gray-100">
+            
+            <!-- Admin Header -->
+            <div class="bg-slate-900 text-white p-3.5 sm:p-4 flex justify-between items-center border-b border-slate-800 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">⚙️</span>
+                    <div>
+                        <h2 class="font-bold text-xs sm:text-base leading-tight">Dashboard Kelola Bio Link</h2>
+                        <span class="text-[10px] text-indigo-400 font-mono">Bio Link Pro v5.0 (Ultimate Enterprise Suite 2026)</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openLivePreview()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-indigo-500/30">
+                        <span>📱</span> Pratinjau
+                    </button>
+                    <button id="adminLogoutBtn" onclick="handleAdminLogout()" class="hidden bg-red-600/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-red-500/30">
+                        <span>🚪</span> Keluar
+                    </button>
+                    <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white p-1.5 hover:bg-slate-800 rounded-lg text-lg transition">✕</button>
+                </div>
+            </div>
+
+            <!-- LOGIN VIEW -->
+            <div id="adminLoginView" class="p-6 sm:p-8 flex flex-col items-center justify-center text-center space-y-4 my-auto overflow-y-auto">
+                <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl shadow-inner">
+                    🔒
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-bold text-base text-gray-900">Akses Masuk Admin</h3>
+                    <p class="text-xs text-gray-500 max-w-xs">Masukkan kata sandi untuk mengelola tampilan dan komponen Bio Link Anda.</p>
+                </div>
+                
+                <div class="w-full max-w-xs space-y-3">
+                    <div class="relative">
+                        <input type="password" id="loginPassword" onkeyup="if(event.key==='Enter') handleAdminLogin()" class="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs text-gray-800 font-mono" placeholder="Masukkan kata sandi...">
+                        <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 p-1 text-sm focus:outline-none" title="Lihat Kata Sandi">
+                            <span id="loginEyeIcon">👁️</span>
+                        </button>
+                    </div>
+                    <button onclick="handleAdminLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md flex items-center justify-center gap-2">
+                        <span>🔑</span> Masuk ke Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- DASHBOARD VIEW -->
+            <div id="adminDashboardView" class="hidden flex-1 flex flex-col overflow-hidden">
+                <!-- Tab Menu Navigation -->
+                <div class="flex border-b border-gray-200 bg-gray-50 px-3 sm:px-4 pt-2 gap-1 overflow-x-auto text-xs font-semibold flex-shrink-0">
+                    <button id="tabBtn-profile" onclick="switchAdminTab('profile')" class="py-2.5 px-3.5 sm:px-4 rounded-t-xl transition border-b-2 border-indigo-600 text-indigo-600 bg-white font-bold flex items-center gap-1.5 whitespace-nowrap">
+                        <span>👤</span> Profil & Tampilan
+                    </button>
+                    <button id="tabBtn-components" onclick="switchAdminTab('components')" class="py-2.5 px-3.5 sm:px-4 rounded-t-xl transition text-gray-500 hover:text-indigo-600 flex items-center gap-1.5 whitespace-nowrap">
+                        <span>🧩</span> Kelola Komponen
+                    </button>
+                    <button id="tabBtn-presets" onclick="switchAdminTab('presets')" class="py-2.5 px-3.5 sm:px-4 rounded-t-xl transition text-gray-500 hover:text-indigo-600 flex items-center gap-1.5 whitespace-nowrap">
+                        <span>🎨</span> Preset & Template
+                    </button>
+                    <button id="tabBtn-business" onclick="switchAdminTab('business')" class="py-2.5 px-3.5 sm:px-4 rounded-t-xl transition text-gray-500 hover:text-indigo-600 flex items-center gap-1.5 whitespace-nowrap">
+                        <span>💼</span> Business & Domain
+                    </button>
+                </div>
+
+                <!-- Admin Tab Contents -->
+                <div class="p-3.5 sm:p-5 overflow-y-auto flex-1 space-y-4 bg-slate-50">
+                    
+                    <!-- TAB 1: PROFIL & TAMPILAN -->
+                    <div id="tabContent-profile" class="space-y-4">
+                        <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-3 shadow-xs">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Informasi Profil & Foto</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <label class="block font-medium text-gray-700 mb-1">Nama Tampilan</label>
+                                    <input type="text" id="editName" oninput="updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs" placeholder="Masukkan nama tampilan...">
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-gray-700 mb-1">Foto Profil (Pangkas / Unggah File)</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="editAvatar" oninput="updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs font-mono" placeholder="https://...">
+                                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 whitespace-nowrap transition">
+                                            <span>✂️</span> Crop & Browse
+                                            <input type="file" id="editAvatarFile" accept="image/*" class="hidden" onchange="triggerImageCropper(event, 'avatar')">
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-medium text-gray-700 mb-1">Bio Singkat</label>
+                                    <textarea id="editBio" rows="2" oninput="updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs" placeholder="Tulis bio singkat Anda..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tipografi & Warna -->
+                        <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-4 shadow-xs">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Tipografi & Gaya Teks</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <label class="block font-medium text-gray-700 mb-1">Jenis Font</label>
+                                    <select id="editFontFamily" onchange="updateFontSamplePreview(); updateProfileRealtime();" class="w-full px-3 py-2 border rounded-lg text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="'Inter', sans-serif">Inter (Modern Clean)</option>
+                                        <option value="'Poppins', sans-serif">Poppins (Friendly Round)</option>
+                                        <option value="'Roboto', sans-serif">Roboto (Neat & Simple)</option>
+                                        <option value="'Montserrat', sans-serif">Montserrat (Bold Modern)</option>
+                                        <option value="'Outfit', sans-serif">Outfit (Minimalist)</option>
+                                        <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
+                                        <option value="'Space Grotesk', sans-serif">Space Grotesk (Tech)</option>
+                                        <option value="'Dancing Script', cursive">Dancing Script (Handwritten)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-gray-700 mb-1">Ukuran Font</label>
+                                    <select id="editFontSize" onchange="updateFontSamplePreview(); updateProfileRealtime();" class="w-full px-3 py-2 border rounded-lg text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="85%">Kecil (85%)</option>
+                                        <option value="100%" selected>Normal (100%)</option>
+                                        <option value="115%">Besar (115%)</option>
+                                        <option value="130%">Ekstra Besar (130%)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-100 rounded-lg border border-slate-200 space-y-2 text-center">
+                                <div class="flex items-center justify-between text-[11px] font-bold text-gray-500 border-b border-gray-200 pb-1.5">
+                                    <span>INFORMASI TIPOGRAFI AKTIF:</span>
+                                    <div class="flex gap-2">
+                                        <span id="activeFontLabel" class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-mono">Font: Inter</span>
+                                        <span id="activeSizeLabel" class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-mono">Ukuran: 100%</span>
+                                    </div>
+                                </div>
+                                <div id="fontSamplePreview" class="p-2 transition-all font-medium text-gray-800">
+                                    Abc 123 - Contoh Tampilan Tipografi Bio Link
+                                </div>
+                            </div>
+
+                            <!-- Warna Teks Utama & Tombol -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-200">
+                                <div class="bg-slate-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                                    <label class="block text-xs font-bold text-gray-800 flex justify-between items-center">
+                                        <span>🎨 Warna Teks Utama</span>
+                                        <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-mono">RGB</span>
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" id="editTextColorPicker" value="#ffffff" onchange="syncRgbFromHex('editTextColor', this.value, 'main')" class="w-9 h-9 rounded-lg border cursor-pointer flex-shrink-0">
+                                        <input type="text" id="editTextColor" value="rgb(255, 255, 255)" oninput="syncHexFromRgb('editTextColorPicker', this.value, 'main')" class="flex-1 px-3 py-1.5 border rounded-lg text-xs font-mono text-gray-700" placeholder="rgb(255, 255, 255)">
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-1.5 text-[11px] pt-1">
+                                        <div class="flex items-center gap-1 bg-red-50 p-1.5 rounded-lg border border-red-100"><span class="text-red-600 font-extrabold">R:</span><input type="number" id="rgbMainR" min="0" max="255" value="255" oninput="updateRgbField('main')" class="w-full text-center bg-white border border-red-200 rounded font-semibold text-red-700 text-xs"></div>
+                                        <div class="flex items-center gap-1 bg-emerald-50 p-1.5 rounded-lg border border-emerald-100"><span class="text-emerald-600 font-extrabold">G:</span><input type="number" id="rgbMainG" min="0" max="255" value="255" oninput="updateRgbField('main')" class="w-full text-center bg-white border border-emerald-200 rounded font-semibold text-emerald-700 text-xs"></div>
+                                        <div class="flex items-center gap-1 bg-blue-50 p-1.5 rounded-lg border border-blue-100"><span class="text-blue-600 font-extrabold">B:</span><input type="number" id="rgbMainB" min="0" max="255" value="255" oninput="updateRgbField('main')" class="w-full text-center bg-white border border-blue-200 rounded font-semibold text-blue-700 text-xs"></div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                                    <label class="block text-xs font-bold text-gray-800 flex justify-between items-center">
+                                        <span>🔘 Warna Teks Tombol</span>
+                                        <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-mono">RGB</span>
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" id="editBtnTextColorPicker" value="#ffffff" onchange="syncRgbFromHex('editBtnTextColor', this.value, 'btn')" class="w-9 h-9 rounded-lg border cursor-pointer flex-shrink-0">
+                                        <input type="text" id="editBtnTextColor" value="rgb(255, 255, 255)" oninput="syncHexFromRgb('editBtnTextColorPicker', this.value, 'btn')" class="flex-1 px-3 py-1.5 border rounded-lg text-xs font-mono text-gray-700" placeholder="rgb(255, 255, 255)">
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-1.5 text-[11px] pt-1">
+                                        <div class="flex items-center gap-1 bg-red-50 p-1.5 rounded-lg border border-red-100"><span class="text-red-600 font-extrabold">R:</span><input type="number" id="rgbBtnR" min="0" max="255" value="255" oninput="updateRgbField('btn')" class="w-full text-center bg-white border border-red-200 rounded font-semibold text-red-700 text-xs"></div>
+                                        <div class="flex items-center gap-1 bg-emerald-50 p-1.5 rounded-lg border border-emerald-100"><span class="text-emerald-600 font-extrabold">G:</span><input type="number" id="rgbBtnG" min="0" max="255" value="255" oninput="updateRgbField('btn')" class="w-full text-center bg-white border border-emerald-200 rounded font-semibold text-emerald-700 text-xs"></div>
+                                        <div class="flex items-center gap-1 bg-blue-50 p-1.5 rounded-lg border border-blue-100"><span class="text-blue-600 font-extrabold">B:</span><input type="number" id="rgbBtnB" min="0" max="255" value="255" oninput="updateRgbField('btn')" class="w-full text-center bg-white border border-blue-200 rounded font-semibold text-blue-700 text-xs"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sandi Akses -->
+                        <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-3 shadow-xs">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Keamanan & Sandi Akses</h3>
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-1">Kata Sandi Admin Baru (Opsional)</label>
+                                <div class="relative">
+                                    <input type="password" id="editPassword" class="w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs font-mono" placeholder="••••••••">
+                                    <button type="button" onclick="togglePasswordVisibility('editPassword', 'editEyeIcon')" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 p-1 text-xs" title="Lihat Kata Sandi">
+                                        <span id="editEyeIcon">👁️</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="saveProfileSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2 text-xs">
+                            <span>💾</span> Simpan Perubahan Profil & Tampilan
+                        </button>
+                    </div>
+
+                    <!-- TAB 2: KELOLA KOMPONEN WITH DRAG & DROP REORDER -->
+                    <div id="tabContent-components" class="hidden space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-xl border border-gray-200 shadow-xs gap-2">
+                            <div>
+                                <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                    <span>🧩</span> Daftar Komponen Aktif
+                                </span>
+                                <span class="text-[10px] text-indigo-600 font-medium block">💡 Geser ikon ☰ untuk mengatur urutan (Drag & Drop) atau gunakan tombol ▲ / ▼</span>
+                            </div>
+                            <button onclick="openAddComponentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                                <span>➕</span> Tambah Komponen Baru
+                            </button>
+                        </div>
+                        <div id="componentsAdminList" class="space-y-2"></div>
+                    </div>
+
+                    <!-- TAB 3: PRESET & TEMPLATE GALERI PEMANDANGAN + 50 TEMA PENDIDIKAN -->
+                    <div id="tabContent-presets" class="hidden space-y-4">
+                        <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-3 shadow-xs">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Pengaturan Latar Belakang & Crop File</h3>
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-1">Latar Belakang (CSS Gradient / URL Gambar / Crop File)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="editBackground" oninput="updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono text-xs" placeholder="linear-gradient(...) atau https://...">
+                                    <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 whitespace-nowrap transition">
+                                        <span>✂️</span> Crop & Browse
+                                        <input type="file" id="editBgFile" accept="image/*" class="hidden" onchange="triggerImageCropper(event, 'background')">
+                                    </label>
+                                </div>
+                            </div>
+                            <button onclick="saveProfileSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                                Simpan Latar Belakang
+                            </button>
+                        </div>
+
+                        <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-2">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Galeri Preset Latar Belakang & Avatar</h3>
+                                <div class="flex flex-wrap gap-1.5 text-xs">
+                                    <button onclick="filterPresets('all')" class="px-2.5 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100 transition">Semua</button>
+                                    <button onclick="filterPresets('education')" class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded-lg hover:bg-amber-200 transition">🎓 Pendidikan (50)</button>
+                                    <button onclick="filterPresets('scenery')" class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">🏔️ Pemandangan</button>
+                                    <button onclick="filterPresets('gradient')" class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">🎨 Gradient</button>
+                                    <button onclick="filterPresets('pattern')" class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">✨ Tekstur</button>
+                                    <button onclick="filterPresets('dark')" class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">🌙 Gelap</button>
+                                    <button onclick="filterPresets('avatar')" class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition">👤 Avatar</button>
+                                </div>
+                            </div>
+                            <div id="presetGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: BUSINESS & DOMAIN + SHORT LINK PRO (SIDE-BY-SIDE GRID) -->
+                    <div id="tabContent-business" class="hidden space-y-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <!-- Custom Subdomain & Domain Pro Card -->
+                            <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-3 shadow-xs flex flex-col justify-between">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between border-b pb-2">
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                                            <span>🌐</span> Subdomain Kustom & Domain Pro
+                                        </h3>
+                                        <span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Terverifikasi Pro</span>
+                                    </div>
+                                    <div class="space-y-3 text-xs">
+                                        <div>
+                                            <label class="block font-medium text-gray-700 mb-1">Subdomain & Akhiran Domain Kustom</label>
+                                            <div class="flex items-center gap-1">
+                                                <input type="text" id="editSubdomain" oninput="updateShortenerDomainOptions()" class="flex-1 px-3 py-2 border rounded-lg font-mono text-xs text-right" placeholder="username">
+                                                <select id="editSubdomainSuffix" onchange="updateShortenerDomainOptions()" class="font-bold text-gray-700 font-mono bg-gray-100 px-2 py-2 rounded-lg border text-[11px] outline-none cursor-pointer">
+                                                    <option value=".321.id">.321.id</option>
+                                                    <option value=".bio.link">.bio.link</option>
+                                                    <option value=".go.my.id">.go.my.id</option>
+                                                    <option value=".klik.id">.klik.id</option>
+                                                    <option value=".linktree.id">.linktree.id</option>
+                                                    <option value=".ku.my.id">.ku.my.id</option>
+                                                    <option value="custom">Domain Akhiran Kustom...</option>
+                                                </select>
+                                            </div>
+                                            <!-- Custom Suffix Input (if 'custom' selected) -->
+                                            <div id="customSuffixContainer" class="hidden mt-2">
+                                                <input type="text" id="editCustomSuffixInput" oninput="updateShortenerDomainOptions()" class="w-full px-3 py-1.5 border rounded-lg font-mono text-xs text-gray-700" placeholder=".domainpribadi.id">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block font-medium text-gray-700 mb-1">Custom Domain Own Brand (CNAME)</label>
+                                            <input type="text" id="editCustomDomain" class="w-full px-3 py-2 border rounded-lg font-mono text-xs" placeholder="link.brandanda.com">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-t text-xs">
+                                    <p class="text-[10px] text-gray-500">Record DNS CNAME: <code class="bg-gray-100 px-1 py-0.5 rounded text-indigo-700 font-mono">cname.321.id</code></p>
+                                </div>
+                            </div>
+
+                            <!-- Short Link Generator Card -->
+                            <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-3 shadow-xs">
+                                <div class="flex items-center justify-between border-b pb-2">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                                        <span>⚡</span> Short Link Pro (Memperpendek Link)
+                                    </h3>
+                                    <span class="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Fitur Kustom</span>
+                                </div>
+                                
+                                <div class="space-y-2 text-xs">
+                                    <div>
+                                        <label class="block font-medium text-gray-700 mb-1">URL Panjang Tujuan</label>
+                                        <input type="text" id="shortenLongUrl" class="w-full px-3 py-2 border rounded-lg font-mono text-xs" placeholder="https://instagram.com/akun_resmi_anda">
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-gray-700 mb-1">Kustom Alias & Pilihan Domain</label>
+                                        <div class="flex items-center gap-1">
+                                            <select id="shortenDomainSelect" class="font-bold text-gray-700 font-mono bg-gray-100 px-2 py-2 rounded-lg border text-[11px] outline-none cursor-pointer hover:bg-gray-200 transition" title="Pilih Domain Alias">
+                                                <option value="321.id/">321.id/</option>
+                                                <option value="bio.link/">bio.link/</option>
+                                                <option value="go.my.id/">go.my.id/</option>
+                                                <option value="klik.id/">klik.id/</option>
+                                                <option id="optCustomSubdomain" value="johndoe.321.id/">johndoe.321.id/</option>
+                                            </select>
+                                            <input type="text" id="shortenCustomAlias" class="flex-1 px-3 py-2 border rounded-lg font-mono text-xs" placeholder="promo-spesial">
+                                        </div>
+                                    </div>
+                                    <button onclick="generateShortLink()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition text-xs flex items-center justify-center gap-1.5">
+                                        <span>⚡</span> Buat / Simpan Link Pendek
+                                    </button>
+                                </div>
+
+                                <!-- Result Box with Direct Apply & Test Actions -->
+                                <div id="shortenResultContainer" class="hidden pt-2 border-t space-y-2">
+                                    <label class="block text-[11px] font-bold text-gray-600">Link Pendek Dihasilkan:</label>
+                                    <div class="flex items-center gap-2 bg-indigo-50 p-2 rounded-lg border border-indigo-100">
+                                        <input type="text" id="generatedShortUrl" readonly class="flex-1 bg-transparent font-mono text-xs text-indigo-700 font-bold outline-none">
+                                        <button onclick="copyGeneratedShortUrl()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded text-[11px] transition">
+                                            📋 Salin
+                                        </button>
+                                        <button onclick="showQrModalForUrl(document.getElementById('generatedShortUrl').value)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded text-[11px] transition" title="Tampilkan QR Code">
+                                            📱 QR Code
+                                        </button>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="window.applyCurrentShortLinkToBio()" class="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition flex items-center justify-center gap-1 shadow-xs">
+                                            <span>➕</span> Terapkan ke Bio Link
+                                        </button>
+                                        <button onclick="window.testCurrentShortLink()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg text-xs transition flex items-center gap-1 shadow-xs">
+                                            <span>🚀</span> Uji Link
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Table of Short Links with Edit, Delete, QR Actions -->
+                                <div class="pt-2 border-t text-xs">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <span class="text-[11px] font-bold text-gray-500">Daftar Short Link Anda:</span>
+                                        <span class="text-[10px] text-gray-400">💡 ✏️ Edit | 🗑️ Hapus | 📱 QR Code</span>
+                                    </div>
+                                    <div id="shortLinksList" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Developer API Key Management Card -->
+                        <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-3 shadow-xs">
+                            <div class="flex items-center justify-between border-b pb-2">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                                    <span>🔑</span> Pengaturan API Key & Integrasi Developer
+                                </h3>
+                                <span class="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold">API v1.0</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <label class="block font-medium text-gray-700 mb-1">API Key Rahasia Anda</label>
+                                    <div class="relative flex items-center">
+                                        <input type="password" id="apiKeyDisplay" readonly class="w-full px-3 py-2 pr-20 border rounded-lg font-mono text-xs bg-slate-50 text-indigo-900 font-bold" value="bio_live_sk_9a8b7c6d5e4f3210">
+                                        <div class="absolute right-1 flex items-center gap-1">
+                                            <button type="button" onclick="togglePasswordVisibility('apiKeyDisplay', 'apiKeyEyeIcon')" class="text-gray-500 hover:text-indigo-600 p-1 text-xs" title="Lihat Key">
+                                                <span id="apiKeyEyeIcon">👁️</span>
+                                            </button>
+                                            <button type="button" onclick="copyApiKey()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2 py-1 rounded text-[10px]">
+                                                📋 Salin
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-end gap-2">
+                                    <button onclick="regenerateApiKey()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-lg text-xs transition flex items-center gap-1">
+                                        <span>🔄</span> Regenerate Key Baru
+                                    </button>
+                                </div>
+                                <div class="md:col-span-2 text-[10px] text-gray-500 bg-slate-50 p-2.5 rounded-lg border border-gray-200 font-mono">
+                                    <span class="font-bold text-gray-700 block mb-1">Contoh Integrasi cURL / HTTP Request:</span>
+                                    <code>POST https://script.google.com/macros/s/EXEC_ID/exec -H "x-api-key: YOUR_KEY"</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Branding, SEO & Analytics -->
+                        <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 space-y-3 shadow-xs">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Branding, SEO & Tracking Pixel</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <label class="block font-medium text-gray-700 mb-1">Lencana Verifikasi</label>
+                                    <select id="editVerifiedBadge" onchange="updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg text-xs bg-white">
+                                        <option value="none">Tanpa Lencana</option>
+                                        <option value="blue">☑️ Centang Biru Terverifikasi</option>
+                                        <option value="gold">⭐ Centang Emas Official</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-gray-700 mb-1">ID Google Analytics / FB Pixel</label>
+                                    <input type="text" id="editAnalyticsId" class="w-full px-3 py-2 border rounded-lg font-mono text-xs" placeholder="G-XXXXXXXXXX">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-medium text-gray-700 mb-1">SEO Meta Title & Deskripsi</label>
+                                    <input type="text" id="editMetaTitle" class="w-full px-3 py-2 border rounded-lg text-xs mb-2" placeholder="Judul Halaman SEO">
+                                    <textarea id="editMetaDesc" rows="2" class="w-full px-3 py-2 border rounded-lg text-xs" placeholder="Deskripsi meta pencarian..."></textarea>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-medium text-gray-700 mb-1">Custom CSS Styling</label>
+                                    <textarea id="editCustomCss" rows="3" class="w-full px-3 py-2 border rounded-lg font-mono text-xs bg-slate-900 text-emerald-400" placeholder="/* Custom CSS */"></textarea>
+                                </div>
+                            </div>
+                            <button onclick="saveProfileSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                                Simpan Pengaturan Business
+                            </button>
+                        </div>
+
+                        <!-- Business Performance Summary -->
+                        <div class="bg-slate-900 text-white p-3.5 sm:p-4 rounded-xl shadow-md space-y-3">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400">Ringkasan Statistik & Performa Bisnis</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                                <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
+                                    <span class="text-[10px] text-gray-400 block">Total Pengunjung</span>
+                                    <span class="text-base font-extrabold text-white">12,480</span>
+                                </div>
+                                <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
+                                    <span class="text-[10px] text-gray-400 block">Total Klik Tautan</span>
+                                    <span class="text-base font-extrabold text-emerald-400">8,920</span>
+                                </div>
+                                <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
+                                    <span class="text-[10px] text-gray-400 block">Click-Through Rate</span>
+                                    <span class="text-base font-extrabold text-amber-400">71.4%</span>
+                                </div>
+                                <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
+                                    <span class="text-[10px] text-gray-400 block">Status Subdomain</span>
+                                    <span class="text-xs font-bold text-emerald-400">🟢 Aktif & SSL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL QR CODE GENERATOR -->
+    <div id="qrCodeModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[95] flex items-center justify-center p-3 hidden">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col text-center p-5 space-y-4 border border-gray-100">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-gray-900 flex items-center gap-1.5">
+                    <span>📱</span> QR Code Link
+                </h3>
+                <button onclick="closeQrModal()" class="text-gray-400 hover:text-gray-800 text-lg">✕</button>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col items-center justify-center">
+                <img id="qrCodeImage" src="" alt="QR Code" class="w-48 h-48 object-contain rounded-lg shadow-md border bg-white p-2">
+                <p id="qrCodeUrlText" class="text-[11px] font-mono text-indigo-700 font-bold mt-2 truncate max-w-full"></p>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="downloadQrCode()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow">
+                    📥 Unduh QR
+                </button>
+                <button onclick="copyGeneratedShortUrl()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition">
+                    📋 Salin URL
+                </button>
+                <button onclick="closeQrModal()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CROP GAMBAR INTERAKTIF -->
+    <div id="cropperModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[90] flex items-center justify-center p-3 hidden">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">✂️</span>
+                    <h3 class="font-bold text-xs sm:text-sm">Potong & Atur Gambar</h3>
+                </div>
+                <button onclick="closeCropperModal()" class="text-slate-400 hover:text-white text-base">✕</button>
+            </div>
+            
+            <div class="p-4 bg-slate-100 flex items-center justify-center overflow-hidden max-h-[60vh]">
+                <div class="w-full max-h-[50vh] flex items-center justify-center">
+                    <img id="cropperImageTarget" src="" class="max-w-full max-h-full object-contain">
+                </div>
+            </div>
+
+            <div class="p-3 bg-white border-t space-y-3 text-xs">
+                <div class="flex items-center justify-center gap-2">
+                    <button type="button" onclick="rotateCropper(-90)" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold">🔄 Putar Kiri</button>
+                    <button type="button" onclick="rotateCropper(90)" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold">🔁 Putar Kanan</button>
+                    <button type="button" onclick="resetCropper()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold">⏪ Reset</button>
+                </div>
+                <div class="flex justify-end gap-2 pt-1 border-t">
+                    <button onclick="closeCropperModal()" class="px-4 py-2 border rounded-lg font-semibold text-gray-600 hover:bg-gray-100 text-xs">Batal</button>
+                    <button onclick="applyCroppedImage()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition text-xs flex items-center gap-1.5">
+                        <span>✂️</span> Potong & Terapkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT COMPONENT MODAL -->
+    <div id="addComponentModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[85] flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div class="bg-indigo-900 text-white p-4 flex justify-between items-center">
+                <h3 id="modalComponentTitle" class="font-bold text-sm">Tambah Komponen Baru</h3>
+                <button onclick="closeAddComponentModal()" class="text-indigo-200 hover:text-white text-lg">✕</button>
+            </div>
+            <div class="p-4 overflow-y-auto space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Pilih Tipe Komponen</label>
+                    <select id="newCompType" onchange="onCompTypeChange(this.value)" class="w-full px-3 py-2 border rounded-lg bg-white font-semibold text-gray-800 focus:ring-2 focus:ring-indigo-500">
+                        <optgroup label="Dasar">
+                            <option value="link">🔗 Tombol Link Standar</option>
+                            <option value="horizontal-link">🌐 Bar Sosmed Horizontal</option>
+                            <option value="text">📝 Teks Tampilan / Pengumuman</option>
+                            <option value="divider">➖ Garis Pemisah (Divider)</option>
+                            <option value="image">🖼️ Gambar Banner / Foto</option>
+                        </optgroup>
+                        <optgroup label="Ecommerce & Bisnis">
+                            <option value="shop-listing">🛍️ Shop Listing (Katalog Produk)</option>
+                            <option value="shop-item">🏷️ Shop Item Card (Produk Tunggal)</option>
+                            <option value="payment-link">💳 Payment Link (QRIS / Bank)</option>
+                            <option value="campaign">🚀 Campaign / Donasi</option>
+                            <option value="leaderboard">🏆 Leaderboard / Supporter</option>
+                        </optgroup>
+                        <optgroup label="Media & Interaktif">
+                            <option value="embed">🎬 Embed Media (YouTube / Spotify)</option>
+                            <option value="countdown">⏳ Hitung Mundur Event</option>
+                            <option value="calendar">📅 Jadwal / Calendar</option>
+                            <option value="map">🗺️ Peta Lokasi (Google Maps)</option>
+                            <option value="image-slider">🎠 Image Slider / Carousel</option>
+                            <option value="cv">📜 Curriculum Vitae (CV)</option>
+                        </optgroup>
+                        <optgroup label="Kontak & Media Sosial Direct">
+                            <option value="whatsapp">💬 WhatsApp Direct</option>
+                            <option value="telegram">✈️ Telegram Direct</option>
+                            <option value="email">📧 Direct Email</option>
+                            <option value="phone">📞 Direct Phone</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div id="fieldTitleGroup">
+                    <label class="block font-medium text-gray-700 mb-1">Judul / Nama Komponen</label>
+                    <input type="text" id="newCompTitle" class="w-full px-3 py-2 border rounded-lg" placeholder="Contoh: Portofolio Utama">
+                </div>
+
+                <div id="fieldUrlGroup">
+                    <label class="block font-medium text-gray-700 mb-1">URL / Link Tujuan / Nomor HP</label>
+                    <input type="text" id="newCompUrl" class="w-full px-3 py-2 border rounded-lg font-mono" placeholder="https://example.com atau 628123456789">
+                </div>
+
+                <div id="fieldIconGroup">
+                    <label class="block font-medium text-gray-700 mb-1">Ikon / Emoji</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="newCompIcon" class="flex-1 px-3 py-2 border rounded-lg font-mono text-sm" placeholder="Contoh: 💼">
+                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 whitespace-nowrap transition">
+                            <span>✂️</span> Crop
+                            <input type="file" id="newCompIconFile" accept="image/*" class="hidden" onchange="triggerImageCropper(event, 'icon')">
+                        </label>
+                        <button type="button" onclick="clearIconInput()" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-semibold transition">Hapus</button>
+                    </div>
+
+                    <div class="bg-slate-50 border border-gray-200 rounded-xl p-2.5 space-y-2">
+                        <div class="flex flex-wrap items-center justify-between border-b pb-1.5 gap-1">
+                            <span class="text-[11px] font-bold text-gray-600">Pilih Emoji:</span>
+                            <div class="flex flex-wrap gap-1 text-[10px]" id="emojiCategoryTabs">
+                                <button type="button" onclick="switchEmojiCategory('social')" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold transition" id="catBtn-social">Sosmed</button>
+                                <button type="button" onclick="switchEmojiCategory('business')" class="px-2 py-0.5 rounded text-gray-600 hover:bg-gray-200 transition" id="catBtn-business">Bisnis</button>
+                                <button type="button" onclick="switchEmojiCategory('symbols')" class="px-2 py-0.5 rounded text-gray-600 hover:bg-gray-200 transition" id="catBtn-symbols">Simbol</button>
+                                <button type="button" onclick="switchEmojiCategory('lifestyle')" class="px-2 py-0.5 rounded text-gray-600 hover:bg-gray-200 transition" id="catBtn-lifestyle">Gaya Hidup</button>
+                            </div>
+                        </div>
+
+                        <div id="emojiGrid" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-white rounded-lg border border-gray-100"></div>
+                    </div>
+                </div>
+
+                <div id="fieldColorGroup">
+                    <label class="block font-medium text-gray-700 mb-1">Warna Background Komponen</label>
+                    <div class="flex gap-2">
+                        <input type="color" id="newCompColorPicker" value="#4F46E5" onchange="document.getElementById('newCompColor').value = this.value" class="w-9 h-9 border rounded cursor-pointer">
+                        <input type="text" id="newCompColor" value="#4F46E5" class="flex-1 px-3 py-2 border rounded-lg font-mono" placeholder="#4F46E5">
+                    </div>
+                </div>
+
+                <div id="fieldContentGroup" class="hidden">
+                    <label id="fieldContentLabel" class="block font-medium text-gray-700 mb-1">Konten / Format Kustom</label>
+                    <textarea id="newCompContent" rows="3" class="w-full px-3 py-2 border rounded-lg font-mono" placeholder="Format kustom..."></textarea>
+                </div>
+            </div>
+
+            <div class="p-3 bg-gray-50 border-t flex justify-end gap-2 text-xs">
+                <button onclick="closeAddComponentModal()" class="px-4 py-2 border rounded-lg font-semibold text-gray-600 hover:bg-gray-100">Batal</button>
+                <button onclick="saveComponentData()" id="saveComponentBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">Simpan Komponen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVE PREVIEW MODAL -->
+    <div id="previewModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[70] flex items-center justify-center p-3 hidden">
+        <div class="relative w-full max-w-[380px] h-[780px] max-h-[90vh] bg-slate-900 rounded-[40px] p-3 shadow-2xl border-4 border-slate-700 flex flex-col">
+            <div class="w-32 h-4 bg-slate-800 rounded-full mx-auto mb-2 flex-shrink-0"></div>
+            <iframe id="previewFrame" class="w-full flex-1 bg-white rounded-[28px] overflow-hidden border-0"></iframe>
+            <button onclick="closeLivePreview()" class="mt-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 py-1.5 rounded-full transition text-center w-3/4 mx-auto flex-shrink-0">
+                Tutup Live Preview
+            </button>
+        </div>
+    </div>
+
+    <!-- CUSTOM ALERT DIALOG -->
+    <div id="alertModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 text-center space-y-3 shadow-xl border border-gray-100">
+            <div id="alertIcon" class="text-3xl">ℹ️</div>
+            <h4 id="alertTitle" class="font-bold text-sm text-gray-900">Pemberitahuan</h4>
+            <p id="alertMessage" class="text-xs text-gray-600 leading-relaxed"></p>
+            <button onclick="closeAlert()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition">
+                Mengerti
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC WITH FULL PERSISTENCE & COMPREHENSIVE COMPONENT SUITE -->
+    <script>
+        window.isAdminLoggedIn = false;
+        window.editingComponentId = null;
+        window.cropperInstance = null;
+        window.cropperTargetType = null;
+        window.draggedIndex = null;
+        window.currentShortLinkIndex = null;
+        window.editingShortLinkIndex = null;
+
+        window.emojiCategories = {
+            social: ['🌐', '📸', '🐦', '💼', '✈️', '💬', '📧', '📱', '📹', '🎵', '🛒', '🧭', '📷', '📺', '🎧', '🎮'],
+            business: ['💼', '📈', '📁', '📝', '✉️', '📞', '🎯', '💳', '🚀', '🛍️', '🎓', '💡', '📊', '🤝', '🏛️', '🏷️'],
+            symbols: ['⭐', '🌟', '✨', '🔥', '💎', '👑', '📌', '⚡', '🎨', '🎁', '🏆', '💯', '❤️', '✅', '🔔', '🥇'],
+            lifestyle: ['☕', '🍕', '✈️', '🏝️', '🏃', '🎨', '🎬', '📚', '🎙️', '🎶', '🍔', '🧘', '🚗', '🌟', '🐾', '🌍']
+        };
+
+        window.templateLibrary = [
+            // 50 TEMA PENDIDIKAN (EDUCATION THEMES)
+            { category: 'education', name: '1. Perpustakaan Klasik', bg: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '2. Ruang Baca Modern', bg: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '3. Wisuda & Kelulusan', bg: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '4. Papan Tulis Kapur', bg: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '5. Buku & Kopi Belajar', bg: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '6. Laboratorium Sains', bg: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '7. Astronomi & Tatasurya', bg: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '8. Kampus Universitas', bg: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '9. Matematika & Geometri', bg: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '10. Koding & Pemrograman', bg: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '11. Robotika & AI', bg: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '12. Fisika Kuantum', bg: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '13. Kimia & Reaksi', bg: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '14. Biologi & Genotika', bg: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '15. Kedokteran & Anatomi', bg: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '16. Arsitektur & Sketsa', bg: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '17. Seni Rupa & Studio', bg: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '18. Musik & Akustik', bg: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '19. Bahasa & Sastra', bg: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '20. Sejarah Dunia', bg: 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '21. Geografi & Globe', bg: 'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '22. Filsafat & Perenungan', bg: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '23. Ekonomi & Bisnis', bg: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '24. Psikologi & Otak', bg: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '25. Hukum & Keadilan', bg: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '26. Dark Academia Books', bg: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '27. Light Academia Study', bg: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '28. Meja Belajar Kayu', bg: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '29. Alat Tulis & Catatan', bg: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '30. Mikroskop & Riset', bg: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '31. Teleskop & Malam', bg: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '32. Ruang Kuliah Utama', bg: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '33. Taman Kampus Sejuk', bg: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '34. Pembelajaran Digital', bg: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '35. Kelas Online Future', bg: 'https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '36. Ensiklopedia Tua', bg: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '37. Rumus & Papan Tulis', bg: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '38. Diskusi Kelompok', bg: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '39. Peta Dunia Kuno', bg: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '40. Laboratorium Komputer', bg: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '41. Beasiswa & Sukses', bg: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '42. Seminar & Konferensi', bg: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '43. Esai & Mesin Ketik', bg: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '44. Pastel Study Mood', bg: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '45. Minimalist Desk', bg: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '46. Cozy Study Corner', bg: 'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '47. Jurnal Ilmiah Riset', bg: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '48. Inovasi & Teknologi', bg: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '49. Spektrum Cahaya', bg: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'education', name: '50. Wisuda Sunset', bg: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1200&q=80' },
+
+            // INDONESIAN & WORLD SCENERY PRESETS
+            { category: 'scenery', name: 'Pegunungan Bromo', bg: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Raja Ampat Papua', bg: 'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Pulau Komodo Labuan Bajo', bg: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Danau Toba Sumatera', bg: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Pantai Sunset Tropis', bg: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Hutan Pinus Sejuk', bg: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Air Terjun Rimba', bg: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Sawah Terasering Ubud', bg: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Padang Savana Bromo', bg: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Senja Lembah Gunung', bg: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Puncak Gunung Fuji', bg: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Pegunungan Salju Swiss', bg: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80' },
+            { category: 'scenery', name: 'Aurora Borealis Kutub', bg: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1200&q=80' },
+            
+            // GRADIENTS & OTHERS
+            { category: 'gradient', name: 'Ocean Blue Gradient', bg: 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)' },
+            { category: 'gradient', name: 'Sunset Glow Gradient', bg: 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)' },
+            { category: 'pattern', name: 'Polkadot Dark Pattern', bg: 'radial-gradient(#38bdf8 1px, transparent 1px), #0f172a' },
+            { category: 'dark', name: 'Midnight Charcoal', bg: '#090d16' },
+            { category: 'avatar', name: 'Avatar Pria 1', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80' }
+        ];
+
+        window.shortLinksData = [
+            { id: 'sl_1', original: 'https://instagram.com', short: '321.id/ig-ku', clicks: 142 },
+            { id: 'sl_2', original: 'https://wa.me/628123456789?text=Halo', short: '321.id/wa-order', clicks: 89 }
+        ];
+
+        window.appData = {
+            profile: {
+                Name: "John Doe",
+                Bio: "Digital Creator & Tech Enthusiast",
+                Avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+                Background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                Password: "admin123",
+                FontFamily: "'Inter', sans-serif",
+                FontSize: "100%",
+                TextColor: "rgb(255, 255, 255)",
+                ButtonTextColor: "rgb(255, 255, 255)",
+                Subdomain: "johndoe",
+                CustomDomain: "",
+                VerifiedBadge: "blue",
+                AnalyticsId: "G-EXAMPLE123",
+                MetaTitle: "Official Bio Link - John Doe",
+                MetaDesc: "Selamat datang di Bio Link resmi John Doe.",
+                CustomCss: "",
+                ApiKey: "bio_live_sk_9a8b7c6d5e4f3210"
+            },
+            links: [
+                { id: 'id_1', type: 'link', title: 'Portofolio Utama', url: 'https://example.com', icon: '💼', color: '#4F46E5', active: true },
+                { id: 'id_2', type: 'whatsapp', title: 'Chat WhatsApp Kami', url: '628123456789', icon: '💬', color: '#25D366', content: 'Halo, saya tertarik dengan jasa Anda!', active: true },
+                { id: 'id_3', type: 'horizontal-link', content: '📸|https://instagram.com, 🐦|https://twitter.com, 💼|https://linkedin.com', active: true }
+            ]
+        };
+
+        window.saveDataToLocalStorage = function() {
+            try {
+                localStorage.setItem('biolink_app_data_v5', JSON.stringify(window.appData));
+                localStorage.setItem('biolink_short_links_v5', JSON.stringify(window.shortLinksData));
+            } catch(e){}
+        };
+
+        window.loadDataFromLocalStorage = function() {
+            try {
+                var storedApp = localStorage.getItem('biolink_app_data_v5');
+                if (storedApp) {
+                    var parsed = JSON.parse(storedApp);
+                    if (parsed && parsed.profile) window.appData.profile = Object.assign({}, window.appData.profile, parsed.profile);
+                    if (parsed && parsed.links) window.appData.links = parsed.links;
+                }
+
+                var storedShorts = localStorage.getItem('biolink_short_links_v5');
+                if (storedShorts) {
+                    window.shortLinksData = JSON.parse(storedShorts);
+                }
+            } catch(e){}
+        };
+
+        window.triggerImageCropper = function(event, targetType) {
+            var file = event.target.files[0];
+            if (!file) return;
+
+            window.cropperTargetType = targetType;
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                var targetImg = document.getElementById('cropperImageTarget');
+                targetImg.src = e.target.result;
+
+                document.getElementById('cropperModal').classList.remove('hidden');
+
+                if (window.cropperInstance) {
+                    window.cropperInstance.destroy();
+                }
+
+                var aspectRatio = NaN;
+                if (targetType === 'avatar' || targetType === 'icon') {
+                    aspectRatio = 1;
+                } else if (targetType === 'background') {
+                    aspectRatio = 9 / 16;
+                }
+
+                window.cropperInstance = new Cropper(targetImg, {
+                    aspectRatio: aspectRatio,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    restore: false
+                });
+            };
+
+            reader.readAsDataURL(file);
+        };
+
+        window.rotateCropper = function(degree) {
+            if (window.cropperInstance) window.cropperInstance.rotate(degree);
+        };
+
+        window.resetCropper = function() {
+            if (window.cropperInstance) window.cropperInstance.reset();
+        };
+
+        window.applyCroppedImage = function() {
+            if (!window.cropperInstance) return;
+
+            var canvas = window.cropperInstance.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
+            if (canvas) {
+                var croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+                if (window.cropperTargetType === 'background') {
+                    document.getElementById('editBackground').value = croppedDataUrl;
+                    window.appData.profile.Background = croppedDataUrl;
+                } else if (window.cropperTargetType === 'avatar') {
+                    document.getElementById('editAvatar').value = croppedDataUrl;
+                    window.appData.profile.Avatar = croppedDataUrl;
+                } else if (window.cropperTargetType === 'icon') {
+                    document.getElementById('newCompIcon').value = croppedDataUrl;
+                }
+
+                window.saveDataToLocalStorage();
+                window.renderPublicView();
+                window.showAlert('Gambar Berhasil Dipotong', 'Gambar yang telah dipotong siap digunakan!', '✂️');
+            }
+
+            window.closeCropperModal();
+        };
+
+        window.closeCropperModal = function() {
+            document.getElementById('cropperModal').classList.add('hidden');
+            if (window.cropperInstance) {
+                window.cropperInstance.destroy();
+                window.cropperInstance = null;
+            }
+        };
+
+        window.openAdminModal = function() {
+            var el = document.getElementById('adminModal');
+            if (el) el.classList.remove('hidden');
+            if (window.isAdminLoggedIn) {
+                document.getElementById('adminLoginView').classList.add('hidden');
+                document.getElementById('adminDashboardView').classList.remove('hidden');
+                document.getElementById('adminLogoutBtn').classList.remove('hidden');
+                window.loadProfileIntoForm();
+                window.renderAdminComponentsList();
+                window.filterPresets('all');
+                window.renderShortLinksList();
+            } else {
+                document.getElementById('adminLoginView').classList.remove('hidden');
+                document.getElementById('adminDashboardView').classList.add('hidden');
+                document.getElementById('adminLogoutBtn').classList.add('hidden');
+            }
+        };
+
+        window.closeAdminModal = function() {
+            var el = document.getElementById('adminModal');
+            if (el) el.classList.add('hidden');
+        };
+
+        window.openLivePreview = function() {
+            var frame = document.getElementById('previewFrame');
+            var modal = document.getElementById('previewModal');
+
+            if (frame && modal) {
+                modal.classList.remove('hidden');
+                var currentHtml = document.documentElement.outerHTML;
+                frame.srcdoc = currentHtml;
+            }
+        };
+
+        window.closeLivePreview = function() {
+            var modal = document.getElementById('previewModal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.handleAdminLogin = function() {
+            var pwdInput = document.getElementById('loginPassword');
+            var pwd = pwdInput ? pwdInput.value : '';
+
+            if (pwd === window.appData.profile.Password) {
+                window.isAdminLoggedIn = true;
+                document.getElementById('adminLoginView').classList.add('hidden');
+                document.getElementById('adminDashboardView').classList.remove('hidden');
+                document.getElementById('adminLogoutBtn').classList.remove('hidden');
+                window.loadProfileIntoForm();
+                window.renderAdminComponentsList();
+                window.filterPresets('all');
+                window.renderShortLinksList();
+                if (pwdInput) pwdInput.value = '';
+            } else {
+                window.showAlert('Gagal Masuk', 'Kata sandi yang Anda masukkan salah.', '🔒');
+            }
+        };
+
+        window.handleAdminLogout = function() {
+            window.isAdminLoggedIn = false;
+            document.getElementById('adminDashboardView').classList.add('hidden');
+            document.getElementById('adminLoginView').classList.remove('hidden');
+            document.getElementById('adminLogoutBtn').classList.add('hidden');
+        };
+
+        window.togglePasswordVisibility = function(inputId, eyeIconId) {
+            var input = document.getElementById(inputId);
+            var icon = document.getElementById(eyeIconId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) icon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                if (icon) icon.textContent = '👁️';
+            }
+        };
+
+        window.switchAdminTab = function(tabName) {
+            var tabs = ['profile', 'components', 'presets', 'business'];
+            tabs.forEach(function(t) {
+                var btn = document.getElementById('tabBtn-' + t);
+                var content = document.getElementById('tabContent-' + t);
+                if (btn && content) {
+                    if (t === tabName) {
+                        btn.className = "py-2.5 px-3.5 sm:px-4 rounded-t-xl transition border-b-2 border-indigo-600 text-indigo-600 bg-white font-bold flex items-center gap-1.5 whitespace-nowrap";
+                        content.classList.remove('hidden');
+                    } else {
+                        btn.className = "py-2.5 px-3.5 sm:px-4 rounded-t-xl transition text-gray-500 hover:text-indigo-600 flex items-center gap-1.5 whitespace-nowrap";
+                        content.classList.add('hidden');
+                    }
+                }
+            });
+        };
+
+        window.renderPublicView = function() {
+            var p = window.appData.profile;
+            
+            var userNameEl = document.getElementById('userName');
+            var userBioEl = document.getElementById('userBio');
+            var userAvatarEl = document.getElementById('userAvatar');
+            var appBodyEl = document.getElementById('appBody');
+            var verifiedBadgeEl = document.getElementById('verifiedBadge');
+            var customCssTag = document.getElementById('customUserCssTag');
+
+            if (customCssTag) customCssTag.innerHTML = p.CustomCss || '';
+            
+            if (userNameEl) userNameEl.querySelector('span').textContent = p.Name || 'Nama Anda';
+            if (userBioEl) userBioEl.textContent = p.Bio || '';
+            if (userAvatarEl) userAvatarEl.src = p.Avatar || 'https://via.placeholder.com/150';
+
+            if (verifiedBadgeEl) {
+                if (p.VerifiedBadge === 'blue') {
+                    verifiedBadgeEl.textContent = '☑️';
+                    verifiedBadgeEl.classList.remove('hidden');
+                } else if (p.VerifiedBadge === 'gold') {
+                    verifiedBadgeEl.textContent = '⭐';
+                    verifiedBadgeEl.classList.remove('hidden');
+                } else {
+                    verifiedBadgeEl.classList.add('hidden');
+                }
+            }
+            
+            if (appBodyEl) {
+                if (p.Background && (p.Background.indexOf('http') === 0 || p.Background.indexOf('data:image/') === 0)) {
+                    appBodyEl.style.background = 'url("' + p.Background + '") center/cover no-repeat fixed';
+                } else {
+                    appBodyEl.style.background = p.Background || '#0f172a';
+                }
+                appBodyEl.style.fontFamily = p.FontFamily || "'Inter', sans-serif";
+            }
+
+            var container = document.getElementById('mainPublicContainer');
+            if (container) {
+                container.style.fontSize = p.FontSize || '100%';
+                container.style.color = p.TextColor || 'rgb(255, 255, 255)';
+            }
+
+            var compContainer = document.getElementById('componentsContainer');
+            if (!compContainer) return;
+            compContainer.innerHTML = '';
+
+            var activeLinks = window.appData.links.filter(function(l) { return l.active !== false; });
+
+            if (activeLinks.length === 0) {
+                compContainer.innerHTML = '<div class="p-6 text-center text-xs opacity-75 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">Belum ada komponen yang ditampilkan.</div>';
+                return;
+            }
+
+            activeLinks.forEach(function(comp) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'w-full transition-all duration-300';
+
+                if (comp.type === 'horizontal-link') {
+                    wrapper.appendChild(window.renderHorizontalLinkComponent(comp, p));
+                } else if (comp.type === 'whatsapp') {
+                    wrapper.appendChild(window.renderDirectSocialComponent(comp, p));
+                } else {
+                    wrapper.appendChild(window.renderLinkComponent(comp, p));
+                }
+
+                compContainer.appendChild(wrapper);
+            });
+        };
+
+        window.renderLinkComponent = function(comp, p) {
+            var btn = document.createElement('a');
+            btn.href = comp.url || '#';
+            btn.target = '_blank';
+            btn.rel = 'noopener noreferrer';
+            btn.className = 'w-full py-3.5 px-5 rounded-2xl font-bold text-sm shadow-lg backdrop-blur-md border border-white/20 flex items-center justify-between transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] btn-effect-scale';
+            btn.style.backgroundColor = comp.color || '#4F46E5';
+            btn.style.color = p.ButtonTextColor || 'rgb(255, 255, 255)';
+
+            var iconHtml = '<span class="text-lg mr-2">🔗</span>';
+            if (comp.icon) {
+                if (comp.icon.indexOf('data:image/') === 0 || comp.icon.indexOf('http') === 0) {
+                    iconHtml = '<img src="' + comp.icon + '" alt="icon" class="w-5 h-5 object-contain mr-2 inline-block rounded">';
+                } else {
+                    iconHtml = '<span class="text-lg mr-2">' + window.escapeHtml(comp.icon) + '</span>';
+                }
+            }
+
+            btn.innerHTML = iconHtml + '<span class="flex-1 text-center font-semibold">' + window.escapeHtml(comp.title || 'Link') + '</span><span class="text-xs opacity-70">➔</span>';
+            return btn;
+        };
+
+        window.renderHorizontalLinkComponent = function(comp, p) {
+            var row = document.createElement('div');
+            row.className = 'flex items-center justify-center gap-3 py-2 flex-wrap col-span-full';
+            
+            var items = (comp.content || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+            items.forEach(function(itemStr) {
+                var parts = itemStr.split('|');
+                var icon = parts[0] ? parts[0].trim() : '🌐';
+                var url = parts[1] ? parts[1].trim() : '#';
+                
+                var itemBtn = document.createElement('a');
+                itemBtn.href = url;
+                itemBtn.target = '_blank';
+                itemBtn.rel = 'noopener noreferrer';
+                itemBtn.className = 'w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 flex items-center justify-center text-xl shadow-md transition-all hover:scale-110';
+                itemBtn.style.color = p.TextColor || 'rgb(255, 255, 255)';
+                itemBtn.textContent = icon;
+                row.appendChild(itemBtn);
+            });
+            return row;
+        };
+
+        window.renderDirectSocialComponent = function(comp, p) {
+            var btn = document.createElement('a');
+            btn.target = '_blank';
+            btn.rel = 'noopener noreferrer';
+            btn.className = 'w-full py-3.5 px-5 rounded-2xl font-bold text-sm shadow-lg backdrop-blur-md border border-white/20 flex items-center justify-between transition-all duration-300 hover:scale-[1.02] btn-effect-scale';
+            btn.style.backgroundColor = comp.color || '#4F46E5';
+            btn.style.color = p.ButtonTextColor || 'rgb(255, 255, 255)';
+
+            var targetUrl = comp.url || '#';
+            if (comp.type === 'whatsapp') {
+                var phone = (comp.url || '').replace(/[^0-9]/g, '');
+                var msg = encodeURIComponent(comp.content || 'Halo!');
+                targetUrl = 'https://wa.me/' + phone + '?text=' + msg;
+            }
+
+            btn.href = targetUrl;
+            btn.innerHTML = '<span class="text-lg mr-2">' + window.escapeHtml(comp.icon || '💬') + '</span><span class="flex-1 text-center font-semibold">' + window.escapeHtml(comp.title || 'WhatsApp') + '</span><span class="text-xs opacity-70">➔</span>';
+            return btn;
+        };
+
+        window.loadProfileIntoForm = function() {
+            var p = window.appData.profile;
+            document.getElementById('editName').value = p.Name || '';
+            document.getElementById('editAvatar').value = p.Avatar || '';
+            document.getElementById('editBio').value = p.Bio || '';
+            document.getElementById('editFontFamily').value = p.FontFamily || "'Inter', sans-serif";
+            document.getElementById('editFontSize').value = p.FontSize || "100%";
+            document.getElementById('editBackground').value = p.Background || "";
+            document.getElementById('editSubdomain').value = p.Subdomain || "username";
+            document.getElementById('editCustomDomain').value = p.CustomDomain || "";
+            document.getElementById('editVerifiedBadge').value = p.VerifiedBadge || "none";
+            document.getElementById('editAnalyticsId').value = p.AnalyticsId || "";
+            document.getElementById('editMetaTitle').value = p.MetaTitle || "";
+            document.getElementById('editMetaDesc').value = p.MetaDesc || "";
+            document.getElementById('editCustomCss').value = p.CustomCss || "";
+            var apiKeyInput = document.getElementById('apiKeyDisplay');
+            if (apiKeyInput && p.ApiKey) apiKeyInput.value = p.ApiKey;
+
+            if (p.TextColor) {
+                document.getElementById('editTextColor').value = p.TextColor;
+                window.syncHexFromRgb('editTextColorPicker', p.TextColor, 'main');
+            }
+            if (p.ButtonTextColor) {
+                document.getElementById('editBtnTextColor').value = p.ButtonTextColor;
+                window.syncHexFromRgb('editBtnTextColorPicker', p.ButtonTextColor, 'btn');
+            }
+
+            window.updateFontSamplePreview();
+            window.updateShortenerDomainOptions();
+        };
+
+        window.updateProfileRealtime = function() {
+            window.appData.profile.Name = document.getElementById('editName').value;
+            window.appData.profile.Avatar = document.getElementById('editAvatar').value;
+            window.appData.profile.Bio = document.getElementById('editBio').value;
+            window.appData.profile.FontFamily = document.getElementById('editFontFamily').value;
+            window.appData.profile.FontSize = document.getElementById('editFontSize').value;
+            window.appData.profile.VerifiedBadge = document.getElementById('editVerifiedBadge').value;
+            
+            var bgVal = document.getElementById('editBackground') ? document.getElementById('editBackground').value : '';
+            if (bgVal) window.appData.profile.Background = bgVal;
+
+            window.saveDataToLocalStorage();
+            window.renderPublicView();
+        };
+
+        window.updateFontSamplePreview = function() {
+            var family = document.getElementById('editFontFamily').value;
+            var size = document.getElementById('editFontSize').value;
+            var sample = document.getElementById('fontSamplePreview');
+            var fontLabel = document.getElementById('activeFontLabel');
+            var sizeLabel = document.getElementById('activeSizeLabel');
+
+            if (sample) {
+                sample.style.fontFamily = family;
+                sample.style.fontSize = size;
+            }
+            if (fontLabel) fontLabel.textContent = 'Font: ' + family.split(',')[0].replace(/'/g, '');
+            if (sizeLabel) sizeLabel.textContent = 'Ukuran: ' + size;
+        };
+
+        window.syncRgbFromHex = function(targetId, hexValue, mode) {
+            var targetInput = document.getElementById(targetId);
+            if (!targetInput) return;
+
+            var c = hexValue.replace('#', '');
+            if (c.length === 3) c = c.split('').map(function(x) { return x + x; }).join('');
+            var num = parseInt(c, 16);
+            var r = (num >> 16) & 255;
+            var g = (num >> 8) & 255;
+            var b = num & 255;
+
+            var rgbStr = 'rgb(' + r + ', ' + g + ', ' + b + ')';
+            targetInput.value = rgbStr;
+
+            if (mode === 'main') {
+                document.getElementById('rgbMainR').value = r;
+                document.getElementById('rgbMainG').value = g;
+                document.getElementById('rgbMainB').value = b;
+                window.appData.profile.TextColor = rgbStr;
+            } else if (mode === 'btn') {
+                document.getElementById('rgbBtnR').value = r;
+                document.getElementById('rgbBtnG').value = g;
+                document.getElementById('rgbBtnB').value = b;
+                window.appData.profile.ButtonTextColor = rgbStr;
+            }
+
+            window.saveDataToLocalStorage();
+            window.renderPublicView();
+        };
+
+        window.syncHexFromRgb = function(pickerId, rgbStr, mode) {
+            var match = rgbStr.match(/\d+/g);
+            if (match && match.length >= 3) {
+                var r = parseInt(match[0]);
+                var g = parseInt(match[1]);
+                var b = parseInt(match[2]);
+
+                var hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                var picker = document.getElementById(pickerId);
+                if (picker) picker.value = hex;
+
+                if (mode === 'main') {
+                    document.getElementById('rgbMainR').value = r;
+                    document.getElementById('rgbMainG').value = g;
+                    document.getElementById('rgbMainB').value = b;
+                    window.appData.profile.TextColor = rgbStr;
+                } else if (mode === 'btn') {
+                    document.getElementById('rgbBtnR').value = r;
+                    document.getElementById('rgbBtnG').value = g;
+                    document.getElementById('rgbBtnB').value = b;
+                    window.appData.profile.ButtonTextColor = rgbStr;
+                }
+                window.saveDataToLocalStorage();
+                window.renderPublicView();
+            }
+        };
+
+        window.updateRgbField = function(mode) {
+            var r, g, b, pickerId, textId;
+            if (mode === 'main') {
+                r = Math.min(255, Math.max(0, parseInt(document.getElementById('rgbMainR').value) || 0));
+                g = Math.min(255, Math.max(0, parseInt(document.getElementById('rgbMainG').value) || 0));
+                b = Math.min(255, Math.max(0, parseInt(document.getElementById('rgbMainB').value) || 0));
+                pickerId = 'editTextColorPicker';
+                textId = 'editTextColor';
+            } else {
+                r = Math.min(255, Math.max(0, parseInt(document.getElementById('rgbBtnR').value) || 0));
+                g = Math.min(255, Math.max(0, parseInt(document.getElementById('rgbBtnG').value) || 0));
+                b = Math.min(255, Math.max(0, parseInt(document.getElementById('rgbBtnB').value) || 0));
+                pickerId = 'editBtnTextColorPicker';
+                textId = 'editBtnTextColor';
+            }
+
+            var rgbStr = 'rgb(' + r + ', ' + g + ', ' + b + ')';
+            document.getElementById(textId).value = rgbStr;
+
+            var hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+            document.getElementById(pickerId).value = hex;
+
+            if (mode === 'main') {
+                window.appData.profile.TextColor = rgbStr;
+            } else {
+                window.appData.profile.ButtonTextColor = rgbStr;
+            }
+
+            window.saveDataToLocalStorage();
+            window.renderPublicView();
+        };
+
+        window.renderAdminComponentsList = function() {
+            var list = document.getElementById('componentsAdminList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            if (!window.appData.links || window.appData.links.length === 0) {
+                list.innerHTML = '<div class="text-center text-xs text-gray-500 py-6 bg-white rounded-xl border border-dashed border-gray-300">Belum ada komponen. Klik "Tambah Komponen Baru".</div>';
+                return;
+            }
+
+            window.appData.links.forEach(function(comp, idx) {
+                var item = document.createElement('div');
+                item.className = "bg-white p-3 rounded-xl border border-gray-200 flex items-center justify-between shadow-xs gap-2 transition-all cursor-grab active:cursor-grabbing hover:border-indigo-300 select-none";
+                item.draggable = true;
+                item.dataset.index = idx;
+
+                item.addEventListener('dragstart', window.handleDragStart);
+                item.addEventListener('dragover', window.handleDragOver);
+                item.addEventListener('drop', window.handleDrop);
+                item.addEventListener('dragend', window.handleDragEnd);
+
+                var titleText = comp.title || comp.content || 'Komponen tanpa nama';
+
+                item.innerHTML = 
+                    '<div class="flex items-center gap-2.5 overflow-hidden flex-1">' +
+                        '<span class="text-gray-400 hover:text-indigo-600 font-bold cursor-grab text-base select-none px-1" title="Tarik untuk menggeser urutan">☰</span>' +
+                        '<span class="text-gray-400 font-mono text-xs">#' + (idx + 1) + '</span>' +
+                        '<div class="truncate flex-1">' +
+                            '<div class="text-xs font-bold text-gray-800 capitalize truncate">' + window.escapeHtml(comp.type) + ' - ' + window.escapeHtml(titleText) + '</div>' +
+                            '<div class="text-[10px] text-gray-500">' + (comp.active !== false ? '🟢 Aktif' : '⚪ Disembunyikan') + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-1 text-xs flex-shrink-0">' +
+                        '<button onclick="window.moveComponentUp(' + idx + ')" ' + (idx === 0 ? 'disabled class="opacity-20 p-1 text-xs cursor-not-allowed"' : 'class="p-1 hover:bg-gray-100 rounded text-xs text-gray-600 hover:text-indigo-600"') + ' title="Naikkan">▲</button>' +
+                        '<button onclick="window.moveComponentDown(' + idx + ')" ' + (idx === window.appData.links.length - 1 ? 'disabled class="opacity-20 p-1 text-xs cursor-not-allowed"' : 'class="p-1 hover:bg-gray-100 rounded text-xs text-gray-600 hover:text-indigo-600"') + ' title="Turunkan">▼</button>' +
+                        '<button onclick="window.editComponent(\'' + comp.id + '\')" class="px-2 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded text-[11px] font-semibold flex items-center gap-1">✏️ Edit</button>' +
+                        '<button onclick="window.toggleComponentActive(\'' + comp.id + '\')" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 text-[11px]">' + (comp.active !== false ? '👁️' : '🙈') + '</button>' +
+                        '<button onclick="window.duplicateComponent(\'' + comp.id + '\')" class="px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded text-[11px]">📋</button>' +
+                        '<button onclick="window.deleteLinkItem(\'' + comp.id + '\')" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-[11px]">🗑️</button>' +
+                    '</div>';
+
+                list.appendChild(item);
+            });
+        };
+
+        window.handleDragStart = function(e) {
+            window.draggedIndex = parseInt(this.dataset.index);
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', window.draggedIndex);
+            this.classList.add('opacity-50', 'bg-indigo-50', 'border-indigo-400');
+        };
+
+        window.handleDragOver = function(e) {
+            if (e.preventDefault) e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        };
+
+        window.handleDrop = function(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            var dropIndex = parseInt(this.dataset.index);
+            if (window.draggedIndex !== null && window.draggedIndex !== dropIndex) {
+                var movedItem = window.appData.links.splice(window.draggedIndex, 1)[0];
+                window.appData.links.splice(dropIndex, 0, movedItem);
+                
+                window.saveDataToLocalStorage();
+                window.renderAdminComponentsList();
+                window.renderPublicView();
+            }
+            return false;
+        };
+
+        window.handleDragEnd = function() {
+            this.classList.remove('opacity-50', 'bg-indigo-50', 'border-indigo-400');
+            window.draggedIndex = null;
+        };
+
+        window.moveComponentUp = function(idx) {
+            if (idx <= 0) return;
+            var temp = window.appData.links[idx];
+            window.appData.links[idx] = window.appData.links[idx - 1];
+            window.appData.links[idx - 1] = temp;
+            window.saveDataToLocalStorage();
+            window.renderAdminComponentsList();
+            window.renderPublicView();
+        };
+
+        window.moveComponentDown = function(idx) {
+            if (idx >= window.appData.links.length - 1) return;
+            var temp = window.appData.links[idx];
+            window.appData.links[idx] = window.appData.links[idx + 1];
+            window.appData.links[idx + 1] = temp;
+            window.saveDataToLocalStorage();
+            window.renderAdminComponentsList();
+            window.renderPublicView();
+        };
+
+        window.toggleComponentActive = function(id) {
+            var comp = window.appData.links.find(function(l) { return l.id === id; });
+            if (comp) {
+                comp.active = comp.active === false ? true : false;
+                window.saveDataToLocalStorage();
+                window.renderAdminComponentsList();
+                window.renderPublicView();
+            }
+        };
+
+        window.duplicateComponent = function(id) {
+            var comp = window.appData.links.find(function(l) { return l.id === id; });
+            if (comp) {
+                var clone = JSON.parse(JSON.stringify(comp));
+                clone.id = 'id_' + Math.random().toString(36).substr(2, 9);
+                clone.title = clone.title ? clone.title + ' (Salinan)' : 'Salinan';
+                window.appData.links.push(clone);
+
+                window.saveDataToLocalStorage();
+                window.renderAdminComponentsList();
+                window.renderPublicView();
+            }
+        };
+
+        window.updateShortenerDomainOptions = function() {
+            var subInput = document.getElementById('editSubdomain');
+            var sub = subInput ? subInput.value.trim() : '';
+            var suffixSelect = document.getElementById('editSubdomainSuffix');
+            var suffixVal = suffixSelect ? suffixSelect.value : '.321.id';
+            
+            var customSuffixBox = document.getElementById('customSuffixContainer');
+            if (suffixVal === 'custom') {
+                if (customSuffixBox) customSuffixBox.classList.remove('hidden');
+                suffixVal = document.getElementById('editCustomSuffixInput') ? document.getElementById('editCustomSuffixInput').value.trim() : '.id';
+            } else {
+                if (customSuffixBox) customSuffixBox.classList.add('hidden');
+            }
+
+            var opt = document.getElementById('optCustomSubdomain');
+            if (opt) {
+                if (sub) {
+                    var fullDom = sub + suffixVal + '/';
+                    opt.value = fullDom;
+                    opt.textContent = fullDom;
+                    opt.style.display = '';
+                } else {
+                    opt.style.display = 'none';
+                }
+            }
+        };
+
+        window.generateShortLink = function() {
+            var domainPrefix = document.getElementById('shortenDomainSelect') ? document.getElementById('shortenDomainSelect').value : '321.id/';
+            var longUrl = document.getElementById('shortenLongUrl') ? document.getElementById('shortenLongUrl').value.trim() : '';
+            var alias = document.getElementById('shortenCustomAlias') ? document.getElementById('shortenCustomAlias').value.trim() : '';
+
+            if (!longUrl) {
+                window.showAlert('Peringatan', 'Harap masukkan URL Panjang yang valid.', '⚠️');
+                return;
+            }
+
+            if (!/^https?:\/\//i.test(longUrl)) {
+                longUrl = 'https://' + longUrl;
+            }
+
+            if (!alias) {
+                alias = Math.random().toString(36).substring(2, 7);
+            } else {
+                alias = alias.replace(/[^a-zA-Z0-9_-]/g, '');
+            }
+
+            var fullShort = domainPrefix + alias;
+
+            if (window.editingShortLinkIndex !== null && window.shortLinksData[window.editingShortLinkIndex]) {
+                window.shortLinksData[window.editingShortLinkIndex].original = longUrl;
+                window.shortLinksData[window.editingShortLinkIndex].short = fullShort;
+                window.editingShortLinkIndex = null;
+                window.showAlert('Berhasil Diperbarui', 'Short Link telah diperbarui menjadi: ' + fullShort, '✏️');
+            } else {
+                var newShortItem = {
+                    id: 'sl_' + Math.random().toString(36).substr(2, 9),
+                    original: longUrl,
+                    short: fullShort,
+                    clicks: 0
+                };
+                window.shortLinksData.unshift(newShortItem);
+                window.currentShortLinkIndex = 0;
+                window.showAlert('Berhasil Ditambahkan', 'Link pendek berhasil dibuat untuk URL tujuan: ' + longUrl, '⚡');
+            }
+
+            window.saveDataToLocalStorage();
+
+            var resultBox = document.getElementById('shortenResultContainer');
+            var genInput = document.getElementById('generatedShortUrl');
+            if (resultBox && genInput) {
+                genInput.value = 'https://' + fullShort;
+                resultBox.classList.remove('hidden');
+            }
+
+            if (document.getElementById('shortenLongUrl')) document.getElementById('shortenLongUrl').value = '';
+            if (document.getElementById('shortenCustomAlias')) document.getElementById('shortenCustomAlias').value = '';
+
+            window.renderShortLinksList();
+        };
+
+        window.editShortLink = function(idx) {
+            var item = window.shortLinksData[idx];
+            if (!item) return;
+
+            window.editingShortLinkIndex = idx;
+            document.getElementById('shortenLongUrl').value = item.original;
+
+            var parts = item.short.split('/');
+            var alias = parts.pop();
+            var domainPrefix = parts.join('/') + '/';
+
+            document.getElementById('shortenCustomAlias').value = alias;
+            var domainSelect = document.getElementById('shortenDomainSelect');
+            if (domainSelect) {
+                domainSelect.value = domainPrefix;
+            }
+
+            window.showAlert('Mode Edit Short Link', 'Silakan sesuaikan URL atau Alias lalu klik "Buat / Simpan Link Pendek".', '✏️');
+        };
+
+        window.deleteShortLink = function(idx) {
+            window.shortLinksData.splice(idx, 1);
+            window.saveDataToLocalStorage();
+            window.renderShortLinksList();
+            window.showAlert('Telah Dihapus', 'Short Link telah berhasil dihapus dari daftar.', '🗑️');
+        };
+
+        window.showQrModalForUrl = function(url) {
+            if (!url) return;
+            var qrImg = document.getElementById('qrCodeImage');
+            var urlTxt = document.getElementById('qrCodeUrlText');
+            
+            var qrServiceUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
+            if (qrImg) qrImg.src = qrServiceUrl;
+            if (urlTxt) urlTxt.textContent = url;
+
+            var modal = document.getElementById('qrCodeModal');
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeQrModal = function() {
+            var modal = document.getElementById('qrCodeModal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.downloadQrCode = function() {
+            var qrImg = document.getElementById('qrCodeImage');
+            if (!qrImg || !qrImg.src) return;
+            var a = document.createElement('a');
+            a.href = qrImg.src;
+            a.target = '_blank';
+            a.download = 'qrcode-biolink.png';
+            a.click();
+        };
+
+        window.copyGeneratedShortUrl = function() {
+            var genInput = document.getElementById('generatedShortUrl');
+            if (genInput && genInput.value) {
+                window.copyTextToClipboard(genInput.value);
+            }
+        };
+
+        window.copyTextToClipboard = function(text) {
+            var dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            window.showAlert('Tersalin!', 'Text ' + text + ' berhasil disalin ke papan klip.', '📋');
+        };
+
+        window.renderShortLinksList = function() {
+            var container = document.getElementById('shortLinksList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!window.shortLinksData || window.shortLinksData.length === 0) {
+                container.innerHTML = '<div class="text-[10px] text-gray-400 text-center py-2">Belum ada short link.</div>';
+                return;
+            }
+
+            window.shortLinksData.forEach(function(item, idx) {
+                var row = document.createElement('div');
+                row.className = 'flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-gray-200 text-xs gap-1 hover:border-indigo-300 transition';
+                row.innerHTML = 
+                    '<div class="truncate flex-1 pr-1 cursor-pointer" onclick="window.testShortLink(' + idx + ')" title="Klik untuk menguji redirect ke URL tujuan">' +
+                        '<div class="font-mono font-bold text-indigo-600 truncate flex items-center gap-1">⚡ https://' + window.escapeHtml(item.short) + '</div>' +
+                        '<div class="text-[10px] text-gray-400 truncate">➔ ' + window.escapeHtml(item.original) + '</div>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-1 flex-shrink-0">' +
+                        '<span class="text-[10px] bg-indigo-50 text-indigo-600 font-mono font-bold px-1.5 py-0.5 rounded" title="Jumlah Klik">' + item.clicks + ' klik</span>' +
+                        '<button onclick="window.testShortLink(' + idx + ')" class="p-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[11px]" title="Buka & Uji Link">🚀</button>' +
+                        '<button onclick="window.applyShortLinkToBio(' + idx + ')" class="p-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-[11px] font-bold" title="Terapkan sebagai Tombol Bio Link">➕</button>' +
+                        '<button onclick="window.showQrModalForUrl(\'https://' + item.short + '\')" class="p-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded text-[11px]" title="Lihat QR Code">📱</button>' +
+                        '<button onclick="window.editShortLink(' + idx + ')" class="p-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-[11px]" title="Edit Short Link">✏️</button>' +
+                        '<button onclick="window.deleteShortLink(' + idx + ')" class="p-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-[11px]" title="Hapus Short Link">🗑️</button>' +
+                    '</div>';
+                container.appendChild(row);
+            });
+        };
+
+        window.testShortLink = function(idx) {
+            var item = window.shortLinksData[idx];
+            if (!item) return;
+            item.clicks++;
+            window.saveDataToLocalStorage();
+            window.renderShortLinksList();
+            window.open(item.original, '_blank');
+        };
+
+        window.testCurrentShortLink = function() {
+            if (window.currentShortLinkIndex !== null && window.shortLinksData[window.currentShortLinkIndex]) {
+                window.testShortLink(window.currentShortLinkIndex);
+            }
+        };
+
+        window.applyShortLinkToBio = function(idx) {
+            var item = window.shortLinksData[idx];
+            if (!item) return;
+
+            var newId = 'id_' + Math.random().toString(36).substr(2, 9);
+            var shortTitle = item.short.split('/').pop() || 'Short Link';
+            
+            var newComponent = {
+                id: newId,
+                type: 'link',
+                title: 'Link ' + shortTitle,
+                url: item.original,
+                icon: '⚡',
+                color: '#4F46E5',
+                content: '',
+                active: true
+            };
+
+            window.appData.links.push(newComponent);
+            window.saveDataToLocalStorage();
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run.saveComponent(newId, 'link', newComponent.title, item.original, '⚡', '', '#4F46E5', 'btn-effect-scale');
+            }
+
+            window.renderAdminComponentsList();
+            window.renderPublicView();
+            window.showAlert('Telah Diterapkan!', 'Short Link ("' + item.short + '") berhasil ditambahkan menjadi tombol aktif di Bio Link Anda dengan URL tujuan: ' + item.original, '⚡');
+        };
+
+        window.applyCurrentShortLinkToBio = function() {
+            if (window.currentShortLinkIndex !== null && window.shortLinksData[window.currentShortLinkIndex]) {
+                window.applyShortLinkToBio(window.currentShortLinkIndex);
+            }
+        };
+
+        window.copyApiKey = function() {
+            var keyInput = document.getElementById('apiKeyDisplay');
+            if (keyInput) {
+                window.copyTextToClipboard(keyInput.value);
+            }
+        };
+
+        window.regenerateApiKey = function() {
+            var newKey = 'bio_live_sk_' + Math.random().toString(36).substr(2, 16);
+            window.appData.profile.ApiKey = newKey;
+            var keyInput = document.getElementById('apiKeyDisplay');
+            if (keyInput) keyInput.value = newKey;
+            window.saveDataToLocalStorage();
+            window.showAlert('API Key Dibuat Baru', 'API Key rahasia baru Anda adalah: ' + newKey, '🔑');
+        };
+
+        window.openAddComponentModal = function(comp) {
+            window.editingComponentId = comp ? comp.id : null;
+            var titleEl = document.getElementById('modalComponentTitle');
+            var typeEl = document.getElementById('newCompType');
+            var titleInput = document.getElementById('newCompTitle');
+            var urlInput = document.getElementById('newCompUrl');
+            var iconInput = document.getElementById('newCompIcon');
+            var colorPicker = document.getElementById('newCompColorPicker');
+            var colorInput = document.getElementById('newCompColor');
+            var contentInput = document.getElementById('newCompContent');
+
+            if (comp) {
+                if (titleEl) titleEl.textContent = 'Edit Komponen';
+                if (typeEl) typeEl.value = comp.type || 'link';
+                if (titleInput) titleInput.value = comp.title || '';
+                if (urlInput) urlInput.value = comp.url || '';
+                if (iconInput) iconInput.value = comp.icon || '';
+                if (colorInput) colorInput.value = comp.color || '#4F46E5';
+                if (colorPicker) colorPicker.value = comp.color || '#4F46E5';
+                if (contentInput) contentInput.value = comp.content || '';
+            } else {
+                if (titleEl) titleEl.textContent = 'Tambah Komponen Baru';
+                if (typeEl) typeEl.value = 'link';
+                if (titleInput) titleInput.value = '';
+                if (urlInput) urlInput.value = '';
+                if (iconInput) iconInput.value = '🔗';
+                if (colorInput) colorInput.value = '#4F46E5';
+                if (colorPicker) colorPicker.value = '#4F46E5';
+                if (contentInput) contentInput.value = '';
+            }
+
+            if (typeEl) window.onCompTypeChange(typeEl.value);
+            var modal = document.getElementById('addComponentModal');
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeAddComponentModal = function() {
+            var modal = document.getElementById('addComponentModal');
+            if (modal) modal.classList.add('hidden');
+            window.editingComponentId = null;
+        };
+
+        window.onCompTypeChange = function(type) {
+            var titleGrp = document.getElementById('fieldTitleGroup');
+            var urlGrp = document.getElementById('fieldUrlGroup');
+            var iconGrp = document.getElementById('fieldIconGroup');
+            var colorGrp = document.getElementById('fieldColorGroup');
+            var contentGrp = document.getElementById('fieldContentGroup');
+            var contentLbl = document.getElementById('fieldContentLabel');
+
+            if (titleGrp) titleGrp.classList.remove('hidden');
+            if (urlGrp) urlGrp.classList.remove('hidden');
+            if (iconGrp) iconGrp.classList.remove('hidden');
+            if (colorGrp) colorGrp.classList.remove('hidden');
+            if (contentGrp) contentGrp.classList.add('hidden');
+
+            if (type === 'horizontal-link') {
+                if (titleGrp) titleGrp.classList.add('hidden');
+                if (urlGrp) urlGrp.classList.add('hidden');
+                if (iconGrp) iconGrp.classList.add('hidden');
+                if (colorGrp) colorGrp.classList.add('hidden');
+                if (contentGrp) contentGrp.classList.remove('hidden');
+                if (contentLbl) contentLbl.textContent = 'Format Sosmed (contoh: 📸|https://instagram.com, 🐦|https://twitter.com)';
+            } else if (type === 'text') {
+                if (urlGrp) urlGrp.classList.add('hidden');
+                if (iconGrp) iconGrp.classList.add('hidden');
+                if (colorGrp) colorGrp.classList.add('hidden');
+                if (contentGrp) contentGrp.classList.remove('hidden');
+                if (contentLbl) contentLbl.textContent = 'Konten Teks / Pengumuman';
+            } else if (type === 'divider') {
+                if (titleGrp) titleGrp.classList.add('hidden');
+                if (urlGrp) urlGrp.classList.add('hidden');
+                if (iconGrp) iconGrp.classList.add('hidden');
+                if (colorGrp) colorGrp.classList.add('hidden');
+            }
+        };
+
+        window.editComponent = function(id) {
+            var comp = window.appData.links.find(function(l) { return l.id === id; });
+            if (comp) window.openAddComponentModal(comp);
+        };
+
+        window.saveComponentData = function() {
+            var type = document.getElementById('newCompType').value;
+            var title = document.getElementById('newCompTitle').value;
+            var url = document.getElementById('newCompUrl').value;
+            var icon = document.getElementById('newCompIcon').value;
+            var color = document.getElementById('newCompColor').value;
+            var content = document.getElementById('newCompContent').value;
+
+            if (window.editingComponentId) {
+                var comp = window.appData.links.find(function(l) { return l.id === window.editingComponentId; });
+                if (comp) {
+                    comp.type = type;
+                    comp.title = title;
+                    comp.url = url;
+                    comp.icon = icon;
+                    comp.color = color;
+                    comp.content = content;
+                }
+            } else {
+                var newId = 'id_' + Math.random().toString(36).substr(2, 9);
+                window.appData.links.push({
+                    id: newId,
+                    type: type,
+                    title: title,
+                    url: url,
+                    icon: icon,
+                    color: color,
+                    content: content,
+                    active: true
+                });
+            }
+
+            window.saveDataToLocalStorage();
+            window.closeAddComponentModal();
+            window.renderAdminComponentsList();
+            window.renderPublicView();
+        };
+
+        window.deleteLinkItem = function(id) {
+            window.appData.links = window.appData.links.filter(function(l) { return l.id !== id; });
+            window.saveDataToLocalStorage();
+            window.renderAdminComponentsList();
+            window.renderPublicView();
+        };
+
+        window.filterPresets = function(cat) {
+            var grid = document.getElementById('presetGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            var filtered = cat === 'all' ? window.templateLibrary : window.templateLibrary.filter(function(t) { return t.category === cat; });
+
+            filtered.forEach(function(preset) {
+                var card = document.createElement('div');
+                card.className = "p-2 bg-slate-100 hover:bg-indigo-50 border rounded-xl cursor-pointer text-center transition flex flex-col items-center gap-1 shadow-xs border-gray-200 hover:border-indigo-400 group";
+                card.onclick = function() { window.selectPreset(preset); };
+
+                if (preset.bg) {
+                    var bgBox = document.createElement('div');
+                    bgBox.className = "w-full h-16 rounded-lg border border-gray-200 overflow-hidden shadow-xs relative";
+                    if (preset.bg.indexOf('http') === 0) {
+                        bgBox.style.background = 'url("' + preset.bg + '") center/cover no-repeat';
+                    } else {
+                        bgBox.style.background = preset.bg;
+                    }
+                    card.appendChild(bgBox);
+                } else if (preset.avatar) {
+                    var imgBox = document.createElement('img');
+                    imgBox.src = preset.avatar;
+                    imgBox.className = "w-12 h-12 rounded-full border-2 border-indigo-400 object-cover shadow-xs";
+                    card.appendChild(imgBox);
+                }
+
+                var label = document.createElement('span');
+                label.className = "text-[11px] font-semibold text-gray-700 truncate w-full group-hover:text-indigo-600";
+                label.textContent = preset.name;
+                card.appendChild(label);
+
+                grid.appendChild(card);
+            });
+        };
+
+        window.selectPreset = function(preset) {
+            if (preset.bg) {
+                window.appData.profile.Background = preset.bg;
+                var bgInput = document.getElementById('editBackground');
+                if (bgInput) bgInput.value = preset.bg;
+            }
+            if (preset.avatar) {
+                window.appData.profile.Avatar = preset.avatar;
+                var avatarInput = document.getElementById('editAvatar');
+                if (avatarInput) avatarInput.value = preset.avatar;
+            }
+            window.saveDataToLocalStorage();
+            window.renderPublicView();
+            window.showAlert('Preset Diterapkan & Disimpan', 'Preset "' + preset.name + '" berhasil diterapkan dan telah tersimpan secara persisten!', '🎨');
+        };
+
+        window.saveProfileSettings = function() {
+            window.appData.profile.Name = document.getElementById('editName').value;
+            window.appData.profile.Avatar = document.getElementById('editAvatar').value;
+            window.appData.profile.Bio = document.getElementById('editBio').value;
+            window.appData.profile.FontFamily = document.getElementById('editFontFamily').value;
+            window.appData.profile.FontSize = document.getElementById('editFontSize').value;
+            window.appData.profile.Background = document.getElementById('editBackground').value;
+            window.appData.profile.Subdomain = document.getElementById('editSubdomain').value;
+            window.appData.profile.CustomDomain = document.getElementById('editCustomDomain').value;
+            window.appData.profile.VerifiedBadge = document.getElementById('editVerifiedBadge').value;
+            window.appData.profile.AnalyticsId = document.getElementById('editAnalyticsId').value;
+            window.appData.profile.MetaTitle = document.getElementById('editMetaTitle').value;
+            window.appData.profile.MetaDesc = document.getElementById('editMetaDesc').value;
+            window.appData.profile.CustomCss = document.getElementById('editCustomCss').value;
+            
+            var newPwd = document.getElementById('editPassword').value;
+            if (newPwd && newPwd.trim() !== '') {
+                window.appData.profile.Password = newPwd.trim();
+                document.getElementById('editPassword').value = '';
+            }
+
+            window.saveDataToLocalStorage();
+            window.renderPublicView();
+            window.showAlert('Berhasil', 'Pengaturan profil, latar belakang, dan domain telah disimpan secara permanen.', '✅');
+        };
+
+        window.switchEmojiCategory = function(cat) {
+            var grid = document.getElementById('emojiGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            var list = window.emojiCategories[cat] || [];
+            list.forEach(function(emoji) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = "w-8 h-8 rounded hover:bg-indigo-100 flex items-center justify-center text-base transition border border-gray-100";
+                btn.textContent = emoji;
+                btn.onclick = function() { document.getElementById('newCompIcon').value = emoji; };
+                grid.appendChild(btn);
+            });
+        };
+
+        window.clearIconInput = function() {
+            var input = document.getElementById('newCompIcon');
+            if (input) input.value = '';
+        };
+
+        window.showAlert = function(title, message, icon) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertIcon').textContent = icon || 'ℹ️';
+            document.getElementById('alertModal').classList.remove('hidden');
+        };
+
+        window.closeAlert = function() {
+            document.getElementById('alertModal').classList.add('hidden');
+        };
+
+        window.escapeHtml = function(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        };
+
+        window.onload = function() {
+            window.loadDataFromLocalStorage();
+            window.renderPublicView();
+            window.switchEmojiCategory('social');
+            
+            var btnPreview = document.getElementById('btnLivePreview');
+            var btnManage = document.getElementById('btnManageBio');
+            if (btnPreview) btnPreview.addEventListener('click', window.openLivePreview);
+            if (btnManage) btnManage.addEventListener('click', window.openAdminModal);
+        };
+    </script>
+</body>
+</html>
