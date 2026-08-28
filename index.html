@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio Link Pro Dashboard v7.0 Turbo (Enterprise Suite 2026)</title>
+    
+    <!-- Favicon Inline SVG -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234F46E5'><path d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'/></svg>">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Referrer Policy -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- Cropper.js for Freeform Image Cropping -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background 0.3s ease, color 0.2s ease;
+            min-height: 100vh;
+        }
+
+        .btn-effect-scale {
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+        }
+        .btn-effect-scale:hover {
+            transform: translateY(-2px) scale(1.015);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-effect-scale:active {
+            transform: translateY(1px) scale(0.985);
+        }
+
+        .btn-effect-glow {
+            transition: all 0.2s ease;
+        }
+        .btn-effect-glow:hover {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-effect-bounce:hover {
+            animation: btnBounce 0.5s ease infinite alternate;
+        }
+        @keyframes btnBounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-4px); }
+        }
+
+        .btn-effect-shine {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+        .btn-effect-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent, rgba(255,255,255,0.25), transparent);
+            transform: rotate(30deg) translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+        .btn-effect-shine:hover::after {
+            transform: rotate(30deg) translateX(100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* Shimmer Loading Animation */
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, rgba(226,232,240,0.4) 25%, rgba(203,213,225,0.7) 50%, rgba(226,232,240,0.4) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.6);
+        }
+    </style>
+</head>
+<body id="appBody" class="flex flex-col items-center justify-start min-h-screen p-3 sm:p-6 transition-all duration-200 relative">
+
+    <!-- GOOGLE APPS SCRIPT BACKEND URL CONFIGURATION -->
+    <script>
+        const GAS_BACKEND_URL = "https://script.google.com/macros/s/AKfycbzvyeXSYgxgyaMgaih-wYFZOVZhlMTSe3n4rglWMUuNLMg0LHm2IeXMfGR-pAeiQmvN/exec";
+    </script>
+
+    <!-- SMART WARNING BANNER FOR CONFIG UNSET -->
+    <div id="gasWarningBanner" class="w-full max-w-md bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs text-center shadow-lg mb-4 hidden z-30">
+        Peringatan: URL Backend Google Apps Script belum dikonfigurasi pada variabel GAS_BACKEND_URL.
+    </div>
+
+    <!-- PUBLIC BIO LINK CONTAINER -->
+    <main id="mainPublicContainer" class="w-full max-w-md mx-auto flex flex-col items-center text-center space-y-6 pt-4 sm:pt-6 pb-32 sm:pb-28 relative z-10 transition-all duration-200">
+        
+        <!-- Profile Header -->
+        <header class="flex flex-col items-center space-y-3.5 w-full">
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur-md opacity-40 group-hover:opacity-75 transition duration-300"></div>
+                <img id="userAvatar" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394A3B8'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/></svg>" alt="Avatar" class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white/90 shadow-2xl transition-transform duration-200 group-hover:scale-105">
+            </div>
+            <div class="space-y-1.5 px-4">
+                <h1 id="userName" class="text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-md flex items-center justify-center gap-1.5" style="color: #000000;">
+                    <span>Nama Anda</span>
+                    <span id="verifiedBadge" class="hidden text-indigo-500" title="Akun Terverifikasi">
+                        <svg class="w-5 h-5 fill-indigo-500 inline" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </span>
+                </h1>
+                <p id="userBio" class="text-sm sm:text-base font-medium opacity-90 leading-relaxed max-w-md mx-auto drop-shadow-sm" style="color: #000000;">Digital Creator & Innovator</p>
+            </div>
+        </header>
+
+        <!-- Skeleton Loading Container -->
+        <div id="componentsSkeleton" class="w-full space-y-3.5 hidden">
+            <div class="h-12 w-full rounded-2xl skeleton-shimmer"></div>
+            <div class="h-12 w-full rounded-2xl skeleton-shimmer"></div>
+            <div class="h-12 w-full rounded-2xl skeleton-shimmer"></div>
+        </div>
+
+        <!-- Dynamic Links & Components List -->
+        <section id="componentsContainer" class="w-full space-y-3.5 pt-2">
+            <!-- Dynamic Components Rendered Here via JS -->
+        </section>
+
+    </main>
+
+    <!-- FLOATING ACTION BUTTONS (FOR ADMIN) -->
+    <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col sm:flex-row gap-2.5 shadow-2xl">
+        <button id="btnLivePreview" onclick="window.openLivePreview()" class="bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md transition-all duration-150 flex items-center justify-center gap-2 text-xs border border-white/30 active:scale-95 hover:shadow-indigo-500/25">
+            <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> Live Preview
+        </button>
+        <button id="btnManageBio" onclick="window.openAdminModal()" class="bg-slate-900/95 hover:bg-slate-900 text-white font-bold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md transition-all duration-150 flex items-center justify-center gap-2 text-xs border border-white/20 active:scale-95 hover:shadow-slate-900/40">
+            <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Kelola Bio Link
+        </button>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-sm border border-slate-200 text-center space-y-4">
+            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+                <svg class="w-6 h-6 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800">Login Administrator</h3>
+            <p class="text-xs text-slate-500">Masukkan kata sandi untuk mengakses Dashboard Kelola Bio Link.</p>
+            
+            <div id="adminLoginErrorMsg" class="hidden p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-semibold text-center">
+                Peringatan: Kata sandi yang Anda masukkan salah. Silakan coba lagi.
+            </div>
+
+            <form onsubmit="window.handleAdminLogin(event)" class="space-y-3">
+                <div class="relative">
+                    <input type="password" id="adminPasswordInput" class="w-full pl-3.5 pr-10 py-2.5 text-xs border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold tracking-widest" placeholder="Kata Sandi Admin">
+                    <button type="button" onclick="window.toggleLoginPasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm focus:outline-none" title="Pratinjau Kata Sandi">
+                        <span id="loginPasswordEyeIcon">
+                            <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </span>
+                    </button>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-indigo-500/20">Masuk Dashboard</button>
+            </form>
+            <button onclick="window.closeAdminLoginModal()" class="text-xs text-slate-400 hover:text-slate-600 block mx-auto">Tutup</button>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD MODAL -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[1000] flex items-center justify-center p-2 sm:p-4 hidden">
+        <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] border border-slate-200/60">
+            
+            <!-- Admin Header -->
+            <div class="bg-slate-900 text-white p-3.5 sm:p-4 flex justify-between items-center border-b border-slate-800 flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center text-lg text-indigo-400">
+                        <svg class="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-xs sm:text-base leading-tight">Dashboard Kelola Bio Link</h2>
+                        <span class="text-[10px] text-indigo-400 font-mono tracking-wide">Bio Link Pro v7.0 Turbo (Enterprise 2026)</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.openLivePreview()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-indigo-500/30">
+                        <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> Pratinjau
+                    </button>
+                    <button id="adminLogoutBtn" onclick="window.handleAdminLogout()" class="hidden bg-red-600/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-red-500/30">
+                        <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Keluar
+                    </button>
+                    <button onclick="window.closeAdminModal()" class="text-slate-400 hover:text-white p-1.5 hover:bg-slate-800 rounded-lg text-lg transition">✕</button>
+                </div>
+            </div>
+
+            <!-- Admin Tab Navigation -->
+            <div class="bg-slate-100 border-b border-slate-200 px-3 pt-2 flex space-x-1 sm:space-x-2 overflow-x-auto text-xs font-semibold flex-shrink-0">
+                <button id="tabBtnProfile" onclick="window.switchAdminTab('profile')" class="px-3.5 py-2.5 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-1.5 whitespace-nowrap">
+                    Profil & Tampilan
+                </button>
+                <button id="tabBtnComponents" onclick="window.switchAdminTab('components')" class="px-3.5 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-1.5 whitespace-nowrap">
+                    Kelola Komponen
+                </button>
+                <button id="tabBtnPresets" onclick="window.switchAdminTab('presets')" class="px-3.5 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-1.5 whitespace-nowrap">
+                    Preset & Template
+                </button>
+                <!-- ANALYTICS TAB PERMANENTLY HIDDEN -->
+                <button id="tabBtnAnalytics" onclick="window.switchAdminTab('analytics')" class="hidden px-3.5 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-1.5 whitespace-nowrap" style="display: none !important;">
+                    Analytics & Kontrol
+                </button>
+            </div>
+
+            <!-- Admin Content Container -->
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-6">
+
+                <!-- TAB 1: PROFIL & TAMPILAN -->
+                <div id="tabContentProfile" class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-3">
+                            <label class="block text-xs font-bold text-slate-700">Nama Tampilan</label>
+                            <input type="text" id="inputName" oninput="window.updateProfileRealtime()" class="w-full px-3.5 py-2 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Masukkan nama...">
+                        </div>
+                        <div class="space-y-3">
+                            <label class="block text-xs font-bold text-slate-700">Bio Ringkas</label>
+                            <input type="text" id="inputBio" oninput="window.updateProfileRealtime()" class="w-full px-3.5 py-2 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Masukkan bio...">
+                        </div>
+                    </div>
+
+                    <input type="file" id="fileInputAvatar" accept="image/*" class="hidden" onchange="window.handleFileSelect(event, 'avatar')">
+                    <input type="file" id="fileInputBg" accept="image/*" class="hidden" onchange="window.handleFileSelect(event, 'background')">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Foto Profil / Avatar</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="inputAvatar" oninput="window.updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="https://...">
+                                <button onclick="document.getElementById('fileInputAvatar').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap border border-indigo-500 flex items-center gap-1 shadow-sm">
+                                    Browse & Crop
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4">
+                            <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="inputVerified" onchange="window.updateProfileRealtime()" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                Lencana Verifikasi (Verified Badge)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Gaya Latar Belakang (Gradient / Color / Gambar)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="inputBackground" oninput="window.updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="linear-gradient(...) atau https://...">
+                            <button onclick="document.getElementById('fileInputBg').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap border border-indigo-500 flex items-center gap-1 shadow-sm">
+                                Browse & Crop Latar
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-200">
+
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                            Tipografi & Gaya Teks
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Jenis Font</label>
+                                <select id="inputFontFamily" onchange="window.updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg text-xs font-medium bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <option value="'Inter', sans-serif">Inter (Modern Clean)</option>
+                                    <option value="'Poppins', sans-serif">Poppins (Geometric)</option>
+                                    <option value="'Montserrat', sans-serif">Montserrat (Bold Trendy)</option>
+                                    <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
+                                    <option value="'Space Grotesk', sans-serif">Space Grotesk (Tech/Futuristic)</option>
+                                    <option value="'Outfit', sans-serif">Outfit (Minimalist)</option>
+                                    <option value="'Dancing Script', cursive">Dancing Script (Handwritten)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Ukuran Font</label>
+                                <select id="inputFontSize" onchange="window.updateProfileRealtime()" class="w-full px-3 py-2 border rounded-lg text-xs font-medium bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <option value="14px">14px (Standar Kecil)</option>
+                                    <option value="16px" selected>16px (Normal Default)</option>
+                                    <option value="18px">18px (Sedang)</option>
+                                    <option value="20px">20px (Besar)</option>
+                                    <option value="22px">22px (Extra Besar)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Warna Teks Utama</label>
+                                <input type="color" id="inputTextColor" onchange="window.updateProfileRealtime()" class="w-full h-9 p-1 border rounded-lg cursor-pointer" value="#000000">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Warna Teks Tombol</label>
+                                <input type="color" id="inputButtonTextColor" onchange="window.updateProfileRealtime()" class="w-full h-9 p-1 border rounded-lg cursor-pointer" value="#ffffff">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-3 border-t border-slate-200">
+                        <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                            Keamanan & Sandi Akses Administrator
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi Dashboard Admin Baru</label>
+                                <div class="relative">
+                                    <input type="password" id="inputAdminPassword" onchange="window.updateAdminPasswordRealtime()" class="w-full pl-3.5 pr-10 py-2 border rounded-lg text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Masukkan kata sandi admin baru...">
+                                    <button type="button" onclick="window.toggleAdminPasswordSettingVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm focus:outline-none" title="Pratinjau Sandi Admin">
+                                        <span id="adminSettingPasswordEyeIcon">
+                                            <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-[11px] text-slate-500 pt-1 md:pt-4">
+                                Kata sandi ini digunakan untuk masuk ke Dashboard Kelola Bio Link.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex justify-end">
+                        <button onclick="window.saveProfileSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Simpan Pengaturan Profil
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: KELOLA KOMPONEN -->
+                <div id="tabContentComponents" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                        <div class="relative flex-1">
+                            <input type="text" id="searchCompInput" oninput="window.filterComponents(this.value)" class="w-full pl-9 pr-3 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Cari komponen berdasarkan nama atau tipe...">
+                            <svg class="w-4 h-4 stroke-current stroke-2 fill-none text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <button onclick="window.openAddComponentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md">
+                            <svg class="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Tambah Komponen Baru
+                        </button>
+                    </div>
+
+                    <div id="adminComponentsList" class="space-y-2.5">
+                        <!-- Dynamic list rendered here -->
+                    </div>
+                </div>
+
+                <!-- TAB 3: PRESET & TEMPLATE -->
+                <div id="tabContentPresets" class="space-y-4 hidden">
+                    <div class="flex space-x-2 border-b pb-2 overflow-x-auto text-xs font-bold">
+                        <button onclick="window.switchPresetCategory('pendidikan')" id="presetCat_pendidikan" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white">Pendidikan (50)</button>
+                        <button onclick="window.switchPresetCategory('pemandangan')" id="presetCat_pemandangan" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Pemandangan (50)</button>
+                        <button onclick="window.switchPresetCategory('gradient')" id="presetCat_gradient" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Gradient (50)</button>
+                        <button onclick="window.switchPresetCategory('tekstur')" id="presetCat_tekstur" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Tekstur (50)</button>
+                        <button onclick="window.switchPresetCategory('gelap')" id="presetCat_gelap" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Gelap (50)</button>
+                        <button onclick="window.switchPresetCategory('avatar')" id="presetCat_avatar" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Avatar HD (50)</button>
+                    </div>
+
+                    <div id="presetGalleryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-h-[50vh] overflow-y-auto p-1">
+                        <!-- Dynamic Presets -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADD/EDIT COMPONENT (EMBED MEDIA HIDDEN PER INSTRUCTION) -->
+    <div id="addComponentModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div class="bg-indigo-900 text-white p-4 flex justify-between items-center">
+                <h3 id="modalComponentTitle" class="font-bold text-sm">Tambah Komponen Baru</h3>
+                <button onclick="window.closeAddComponentModal()" class="text-indigo-200 hover:text-white text-lg">✕</button>
+            </div>
+            <div class="p-4 overflow-y-auto space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Pilih Tipe Komponen</label>
+                    <select id="newCompType" onchange="window.updateCompModalFields()" class="w-full px-3 py-2.5 border rounded-lg bg-white font-semibold text-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <optgroup label="Dasar & Tampilan">
+                            <option value="link">🔗 Tombol Link Standar</option>
+                            <option value="text">📝 Teks Tampilan / Pengumuman</option>
+                            <option value="divider">➖ Garis Pemisah (Divider)</option>
+                            <option value="image">🖼️ Gambar Banner / Foto</option>
+                            <option value="horizontal-link">🌐 Bar Sosmed Horizontal</option>
+                            <option value="carousel">🎠 Image Slider / Carousel</option>
+                        </optgroup>
+                        <optgroup label="Interaktif & Event">
+                            <option value="countdown">⏱️ Hitungan Mundur (Event Countdown)</option>
+                            <option value="schedule">📅 Jadwal / Kalender Kegiatan</option>
+                            <option value="map">📍 Peta Lokasi (Google Maps)</option>
+                        </optgroup>
+                        <optgroup label="Ecommerce & Bisnis">
+                            <option value="shop-item">🛍️ Katalog / Produk Toko (Shop Item)</option>
+                            <option value="payment-link">💳 Payment & QRIS / Rekening Bank</option>
+                        </optgroup>
+                        <optgroup label="Kontak Cepat Direct">
+                            <option value="whatsapp">💬 WhatsApp Direct Message</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div id="fieldTitleGroup">
+                    <label id="lblCompTitle" class="block font-medium text-gray-700 mb-1">Judul / Label Komponen</label>
+                    <input type="text" id="newCompTitle" class="w-full px-3 py-2 border rounded-lg font-medium text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Masukkan judul komponen...">
+                </div>
+
+                <div id="fieldUrlGroup">
+                    <label id="lblCompUrl" class="block font-medium text-gray-700 mb-1">URL / Link Tujuan / Nomor HP / Rekening</label>
+                    <input type="file" id="fileInputCompUrl" accept="image/*" class="hidden" onchange="window.handleFileSelect(event, 'compUrl')">
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="newCompUrl" class="w-full px-3 py-2 border rounded-lg font-mono text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="https://example.com atau 628123456789">
+                        <button type="button" id="btnBrowseCompUrl" onclick="document.getElementById('fileInputCompUrl').click()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap border border-indigo-500 flex items-center gap-1 shadow-sm">
+                            Browse & Crop Gambar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="fieldContentGroup">
+                    <label id="lblCompContent" class="block font-medium text-gray-700 mb-1">Isi Konten / Deskripsi Produk / Harga</label>
+                    <textarea id="newCompContent" rows="3" class="w-full px-3 py-2 border rounded-lg text-xs outline-none" placeholder="Detail informasi..."></textarea>
+                </div>
+
+                <div id="fieldPasswordGroup">
+                    <label class="block font-medium text-gray-700 mb-1">Kata Sandi Akses Link (Opsional)</label>
+                    <input type="password" id="newCompPassword" class="w-full px-3 py-2 border rounded-lg font-mono text-xs outline-none" placeholder="Kosongkan jika publik (tanpa password)">
+                </div>
+
+                <!-- ICON SELECTION WITH 80 PRESETS PER CATEGORY -->
+                <div id="fieldIconGroup" class="space-y-2 border-t pt-3">
+                    <label class="block font-medium text-gray-700 mb-1">Ikon Komponen / Logo (Kode SVG / URL Gambar / Simbol Teks)</label>
+                    <input type="file" id="fileInputCompIcon" accept="image/*" class="hidden" onchange="window.handleFileSelect(event, 'compIcon')">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <input type="text" id="newCompIcon" class="flex-1 px-3 py-2 border rounded-lg text-xs outline-none font-mono" placeholder="Contoh: 🚀 atau <svg...> atau https://...">
+                        <button type="button" onclick="document.getElementById('fileInputCompIcon').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold border border-indigo-500 flex items-center gap-1 whitespace-nowrap shadow-sm">
+                            Browse & Crop Ikon
+                        </button>
+                    </div>
+
+                    <div class="mt-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-[11px] text-indigo-900">Preset Ikon Berdasarkan Kategori (80 Ikon / Kategori)</span>
+                            <span class="text-[10px] text-slate-400">Klik ikon untuk menggunakan</span>
+                        </div>
+                        <div class="flex space-x-1 border-b pb-1.5 overflow-x-auto text-[10px] font-bold">
+                            <button type="button" onclick="window.switchIconPresetCategory('social')" id="iconCat_social" class="px-2.5 py-1 rounded-md bg-indigo-600 text-white">Sosial (80)</button>
+                            <button type="button" onclick="window.switchIconPresetCategory('bisnis')" id="iconCat_bisnis" class="px-2.5 py-1 rounded-md bg-white text-slate-700 border hover:bg-slate-100">Bisnis (80)</button>
+                            <button type="button" onclick="window.switchIconPresetCategory('edukasi')" id="iconCat_edukasi" class="px-2.5 py-1 rounded-md bg-white text-slate-700 border hover:bg-slate-100">Edukasi (80)</button>
+                            <button type="button" onclick="window.switchIconPresetCategory('keuangan')" id="iconCat_keuangan" class="px-2.5 py-1 rounded-md bg-white text-slate-700 border hover:bg-slate-100">Keuangan (80)</button>
+                            <button type="button" onclick="window.switchIconPresetCategory('media')" id="iconCat_media" class="px-2.5 py-1 rounded-md bg-white text-slate-700 border hover:bg-slate-100">Media (80)</button>
+                        </div>
+                        <div id="iconPresetsGrid" class="grid grid-cols-8 sm:grid-cols-10 gap-1.5 max-h-36 overflow-y-auto p-1 bg-white border rounded-lg">
+                            <!-- Dynamic 80 Icons Rendered Here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="fieldColorGroup" class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t pt-3">
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Warna Tombol</label>
+                        <input type="color" id="newCompColor" class="w-full h-9 p-1 border rounded-lg cursor-pointer" value="#4F46E5">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Bentuk Tombol</label>
+                        <select id="newCompShape" class="w-full px-2.5 py-2 border rounded-lg text-xs font-semibold bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="rounded-2xl" selected>Sudut Tumpul (Soft 2XL)</option>
+                            <option value="rounded-full">Lonjong / Pill (Rounded Full)</option>
+                            <option value="rounded-lg">Kotak Sedang (Rounded LG)</option>
+                            <option value="rounded-none">Kotak Siku (Sharp Square)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Efek Tombol</label>
+                        <select id="newCompEffect" class="w-full px-2.5 py-2 border rounded-lg text-xs font-semibold bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="btn-effect-scale" selected>Hover Scale & Elevation</option>
+                            <option value="btn-effect-glow">Glowing Pulse Ambient</option>
+                            <option value="btn-effect-bounce">Bounce Micro-Interaction</option>
+                            <option value="btn-effect-shine">Shine Gradient Pass</option>
+                            <option value="none">Tanpa Efek (Standar)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button onclick="window.closeAddComponentModal()" class="px-4 py-2 rounded-lg border text-gray-600 font-bold">Batal</button>
+                    <button onclick="window.saveComponentItem()" class="px-5 py-2 rounded-lg bg-indigo-600 text-white font-bold shadow-md">Simpan Komponen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINK PASSWORD ACCESS MODAL -->
+    <div id="linkPasswordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center space-y-4">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <svg class="w-6 h-6 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-800">Tautan Terproteksi</h3>
+            <p class="text-xs text-slate-500">Tautan ini dilindungi kata sandi. Silakan masukkan kata sandi untuk melanjutkan.</p>
+            <input type="password" id="linkPasswordInput" class="w-full px-3.5 py-2.5 text-xs border rounded-xl text-center font-bold outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Kata Sandi Akses">
+            <div class="flex gap-2">
+                <button onclick="window.closeLinkPasswordModal()" class="w-1/2 py-2 border rounded-xl text-xs font-bold text-slate-600">Batal</button>
+                <button onclick="window.verifyLinkPassword()" class="w-1/2 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg">Buka Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTERACTIVE LIVE PREVIEW MODAL -->
+    <div id="livePreviewModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[1000] flex items-center justify-center p-3 sm:p-6 hidden">
+        <div class="bg-slate-900 w-full max-w-md h-[88vh] rounded-[3rem] shadow-2xl border-4 border-slate-700 overflow-hidden flex flex-col relative">
+            <div class="bg-slate-950 text-slate-400 py-2.5 px-6 flex justify-between items-center text-[10px] font-mono border-b border-slate-800 flex-shrink-0">
+                <span>Live Simulator View</span>
+                <div class="w-16 h-3 bg-slate-800 rounded-full mx-auto"></div>
+                <button onclick="window.closeLivePreviewModal()" class="text-slate-400 hover:text-white font-bold text-xs">✕ Tutup</button>
+            </div>
+            
+            <div id="livePreviewContent" class="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-start text-center space-y-5">
+            </div>
+
+            <div class="p-3 bg-slate-950 border-t border-slate-800 flex justify-between items-center text-xs">
+                <span class="text-slate-400 font-mono text-[10px]">Realtime Preview Mode</span>
+                <button onclick="window.openStandalonePreview()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Buka di Tab Baru ↗</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FREEFORM IMAGE CROPPER MODAL -->
+    <div id="cropperModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center text-xs font-bold">
+                <span>Pemotong Gambar Freeform (Avatar / Background / Icon)</span>
+                <button onclick="window.closeCropModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="p-4 flex-1 bg-slate-900 flex items-center justify-center min-h-[300px]">
+                <img id="cropperImage" src="" alt="Crop Source" class="max-w-full max-h-[50vh] object-contain">
+            </div>
+            <div class="p-3.5 bg-slate-100 flex justify-end gap-2 border-t">
+                <button onclick="window.closeCropModal()" class="px-4 py-2 border rounded-xl text-xs font-bold text-slate-600">Batal</button>
+                <button onclick="window.applyCroppedImage()" class="px-5 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md">Terapkan Gambar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-[2000] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // Global App State with Instant Local Storage Priority
+        window.appState = {
+            profile: {
+                name: 'Nama Anda',
+                bio: 'Digital Creator & Innovator',
+                avatar: 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%2394A3B8\'><path d=\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z\'/></svg>',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '16px',
+                textColor: '#000000',
+                buttonTextColor: '#ffffff',
+                verified: true,
+                password: 'admin',
+                isLoggedIn: false
+            },
+            components: [],
+            editingComponentId: null,
+            cropperTargetField: null,
+            cropperInstance: null,
+            pendingProtectedUrl: null,
+            pendingCompPassword: null,
+            currentPresetCat: 'pendidikan',
+            currentIconPresetCat: 'social'
+        };
+
+        window.svgBrandIcons = {
+            whatsapp: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#25D366" class="inline-block"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.76.459 3.474 1.33 4.986L2 22l5.141-1.347a9.97 9.97 0 004.87 1.258h.004c5.507 0 9.99-4.479 9.99-9.985.001-2.668-1.034-5.176-2.919-7.062A9.92 9.92 0 0012.012 2z"/></svg>`,
+            facebook: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#1877F2" class="inline-block"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
+            instagram: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#E4405F" class="inline-block"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>`,
+            tiktok: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#000000" class="inline-block"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.82.56-1.34 1.52-1.35 2.52-.01.8.31 1.61.88 2.16.66.65 1.62.96 2.53.86 1.05-.1 2.01-.76 2.45-1.72.31-.69.41-1.46.41-2.22V.02z"/></svg>`,
+            youtube: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FF0000" class="inline-block"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
+            telegram: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#26A5E4" class="inline-block"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.119.098.152.228.166.319.016.111.022.257-.001.396z"/></svg>`,
+            twitter: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#000000" class="inline-block"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+            linkedin: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#0A66C2" class="inline-block"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.25V10.9H6.46M7.86 6.72a1.48 1.48 0 1 0 0 2.95 1.48 1.48 0 0 0 0-2.95z"/></svg>`,
+            shopee: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#EE4D2D" class="inline-block"><path d="M19.5 7.5h-3.2a4.3 4.3 0 0 0-8.6 0H4.5L3 21h18l-1.5-13.5zm-7.5-3a2.8 2.8 0 0 1 2.8 2.8h-5.6A2.8 2.8 0 0 1 12 4.5zm0 13.5a4.5 4.5 0 0 1-4.5-4.5h1.8a2.7 2.7 0 1 0 5.4 0h1.8a4.5 4.5 0 0 1-4.5 4.5z"/></svg>`,
+            tokopedia: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#03AC0E" class="inline-block"><path d="M12 2L3 6v12l9 4 9-4V6l-9-4zm0 2.3l6.7 3-6.7 3-6.7-3 6.7-3zM5 8.6l6 2.7v7.9l-6-2.7V8.6zm14 7.9l-6 2.7v-7.9l6-2.7v7.9z"/></svg>`,
+            email: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#EA4335" class="inline-block"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`,
+            website: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#4F46E5" class="inline-block"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`
+        };
+
+        window.addSocialLinkPreset = function(platform) {
+            const textarea = document.getElementById('newCompContent');
+            if (!textarea) return;
+            
+            const templates = {
+                whatsapp: 'https://wa.me/628123456789',
+                instagram: 'https://instagram.com/username',
+                facebook: 'https://facebook.com/username',
+                tiktok: 'https://tiktok.com/@username',
+                youtube: 'https://youtube.com/@channel',
+                telegram: 'https://t.me/username',
+                twitter: 'https://x.com/username',
+                linkedin: 'https://linkedin.com/in/username',
+                shopee: 'https://shopee.co.id/namatoko',
+                tokopedia: 'https://tokopedia.com/namatoko',
+                email: 'mailto:email@domain.com',
+                website: 'https://websiteanda.com'
+            };
+
+            const linkToAdd = templates[platform] || 'https://link-sosmed.com';
+            if (textarea.value.trim().length > 0) {
+                textarea.value = textarea.value.trim() + '\n' + linkToAdd;
+            } else {
+                textarea.value = linkToAdd;
+            }
+            window.showToast(`Link ${platform} ditambahkan ke daftar`, 'success');
+        };
+
+        // Instant Local State Loading (0ms flash-free initial render)
+        window.loadLocalState = function() {
+            try {
+                const saved = localStorage.getItem('bioLinkProData_v7');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.profile) {
+                        window.appState.profile = { ...window.appState.profile, ...parsed.profile, isLoggedIn: false };
+                    }
+                    if (parsed.components && Array.isArray(parsed.components)) {
+                        window.appState.components = parsed.components;
+                    }
+                }
+            } catch (err) {
+                console.error("Local state read error:", err);
+            }
+        };
+
+        window.saveAppState = function() {
+            try {
+                const toSave = {
+                    profile: { ...window.appState.profile, isLoggedIn: false },
+                    components: window.appState.components
+                };
+                localStorage.setItem('bioLinkProData_v7', JSON.stringify(toSave));
+            } catch (err) {
+                console.error("Failed to save app state locally:", err);
+            }
+        };
+
+        // Async API Wrapper for GAS (Background Sync)
+        window.apiCall = async function(action, payload = {}, retries = 1) {
+            if (!GAS_BACKEND_URL || GAS_BACKEND_URL.includes("PASANG_WEB_APP_URL")) {
+                const banner = document.getElementById('gasWarningBanner');
+                if (banner) banner.classList.remove('hidden');
+                return null;
+            }
+
+            const requestData = { action, ...payload };
+
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                    const response = await fetch(GAS_BACKEND_URL, {
+                        method: 'POST',
+                        redirect: 'follow',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify(requestData)
+                    });
+                    return await response.json();
+                } catch (error) {
+                    if (attempt === retries) {
+                        return null;
+                    }
+                    await new Promise(r => setTimeout(r, 600));
+                }
+            }
+        };
+
+        window.syncWithBackend = async function() {
+            if (!GAS_BACKEND_URL || GAS_BACKEND_URL.includes("PASANG_WEB_APP_URL")) return;
+            try {
+                const apiRes = await window.apiCall('getAppData');
+                if (apiRes && apiRes.success && apiRes.data) {
+                    let hasNew = false;
+                    if (apiRes.data.profile && Object.keys(apiRes.data.profile).length > 0) {
+                        // Merge profile gently without overwriting fresher local edits
+                        window.appState.profile = { ...window.appState.profile, ...apiRes.data.profile, isLoggedIn: false };
+                        hasNew = true;
+                    }
+                    if (apiRes.data.links && Array.isArray(apiRes.data.links) && apiRes.data.links.length > 0) {
+                        window.appState.components = apiRes.data.links;
+                        hasNew = true;
+                    }
+                    if (hasNew) {
+                        window.saveAppState();
+                        window.renderProfileView();
+                        window.renderComponentsView();
+                    }
+                }
+            } catch(e) {
+                console.warn("GAS background sync skipped:", e);
+            }
+        };
+
+        window.showToast = function(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-900';
+            toast.className = `${bgClass} text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2 pointer-events-auto transform transition-all duration-200 translate-y-2 opacity-0`;
+            toast.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '!' : 'i'}</span><span>${msg}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 200);
+            }, 2500);
+        };
+
+        window.copyToClipboard = function(text, label = 'Teks') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                window.showToast(`${label} berhasil disalin!`, 'success');
+            } catch (e) {
+                window.showToast('Gagal menyalin teks', 'error');
+            }
+            document.body.removeChild(textarea);
+        };
+
+        window.renderProfileView = function() {
+            const p = window.appState.profile;
+            const body = document.getElementById('appBody');
+            const avatar = document.getElementById('userAvatar');
+            const name = document.getElementById('userName');
+            const bio = document.getElementById('userBio');
+            const verified = document.getElementById('verifiedBadge');
+
+            if (p.background.startsWith('http') || p.background.startsWith('data:')) {
+                body.style.background = `url('${p.background}') center/cover no-repeat fixed`;
+            } else {
+                body.style.background = p.background;
+            }
+
+            body.style.fontFamily = p.fontFamily || "'Inter', sans-serif";
+            body.style.fontSize = p.fontSize || '16px';
+            body.style.color = p.textColor || '#000000';
+
+            if (avatar) avatar.src = p.avatar;
+            if (name) {
+                name.firstElementChild.innerText = p.name;
+                name.style.color = p.textColor || '#000000';
+            }
+            if (bio) {
+                bio.innerText = p.bio;
+                bio.style.color = p.textColor || '#000000';
+            }
+            if (verified) verified.classList.toggle('hidden', !p.verified);
+
+            window.syncLivePreviewRealtime();
+        };
+
+        // 80 PRESET ICONS PER CATEGORY GENERATOR (400 ICONS TOTAL)
+        window.switchIconPresetCategory = function(cat) {
+            window.appState.currentIconPresetCat = cat;
+            ['social', 'bisnis', 'edukasi', 'keuangan', 'media'].forEach(c => {
+                const btn = document.getElementById('iconCat_' + c);
+                if (btn) {
+                    if (c === cat) btn.className = 'px-2.5 py-1 rounded-md bg-indigo-600 text-white font-bold';
+                    else btn.className = 'px-2.5 py-1 rounded-md bg-white text-slate-700 border hover:bg-slate-100 font-bold';
+                }
+            });
+
+            const grid = document.getElementById('iconPresetsGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const iconMap = {
+                social: ['💬', '📱', '🌐', '✉️', '📞', '👥', '📣', '🔔', '❤️', '👍', '⭐', '🚀', '📍', '🗺️', '🎯', '💡', '🔥', '⚡', '🌟', '✨', '🏆', '💎', '🎨', '📸', '🎥', '🎬', '🎶', '🎧', '🎮', '🕹️', '🛒', '🛍️', '💳', '💰', '💵', '📊', '📈', '📅', '⏱️', '🔒', '🔑', '🏷️', '📦', '🎁', '🎉', '📌', '📎', '✏️', '✒️', '📝', '📚', '📖', '🎓', '🏫', '🔬', '💻', '🖥️', '⌨️', '🖱️', '⚙️', '🔧', '🔨', '🛡️', '⚔️', '🏹', '🔮', '🧭', '⌛', '⏳', '🏁', '🚩', '☕', '🍕', '🍔', '🚀', '🛸', '🛰️', '🌍', '🏠', '🏢'],
+                bisnis: ['🛍️', '🛒', '🏪', '🏢', '💼', '🏷️', '📦', '🚚', '📊', '📈', '📉', '💰', '💵', '💳', '🪙', '💎', '🎁', '🎉', '🎯', '📣', '📢', '🔥', '⚡', '⭐', '🌟', '🏆', '🥇', '👑', '🔑', '🔒', '🛡️', '🤝', '👥', '📞', '✉️', '📍', '🌐', '🚀', '💡', '⚙️', '🔧', '📝', '📋', '📁', '📅', '⏱️', '⏳', '📌', '📎', '🔎', '☕', '🍔', '🍕', '🍰', '🍷', '🍻', '🛍️', '🎁', '🏷️', '🛒', '🏪', '🏭', '📈', '📊', '💼', '💳', '💵', '🪙', '✨', '🎯', '🔥', '⚡', '🏆', '👑', '⭐', '🤝', '📦', '🚚', '📍', '🌐'],
+                edukasi: ['🎓', '📚', '📖', '📝', '✏️', '✒️', '🏫', '🔬', '🧪', '🎨', '💻', '🖥️', '⌨️', '🧠', '💡', '🔍', '🔎', '📊', '📈', '🎯', '🏆', '🥇', '📜', '🎓', '🎒', '📐', '📏', '📌', '📎', '📁', '📅', '⏱️', '⏳', '🌐', '🧩', '⚡', '🌟', '✨', '🏅', '🎖️', '📖', '📚', '🎓', '🏫', '🖊️', '🖌️', '🎨', '🖥️', '💻', '📱', '💡', '🔍', '📊', '📈', '🎯', '🏆', '🥇', '📜', '🎒', '📐', '📏', '📌', '📎', '📁', '📅', '⏱️', '⏳', '🌐', '🧩', '⚡', '🌟', '✨', '🏅', '🎖️', '🧠', '🔬', '🧪', '🎓', '📚'],
+                keuangan: ['💳', '💰', '💵', '🪙', '🏦', '🧾', '📊', '📈', '💎', '🔒', '🔑', '🛡️', '📥', '📤', '💸', '🤑', '📉', '🛒', '🛍️', '🎁', '🏷️', '👑', '🏆', '⭐', '⚡', '🔥', '🤝', '💼', '📁', '📋', '📝', '📌', '📍', '🌐', '📞', '✉️', '📅', '⏱️', '⏳', '🎯', '💳', '💰', '💵', '🪙', '🏦', '🧾', '📊', '📈', '💎', '🔒', '🔑', '🛡️', '📥', '📤', '💸', '🤑', '📉', '🛒', '🛍️', '🎁', '🏷️', '👑', '🏆', '⭐', '⚡', '🔥', '🤝', '💼', '📁', '📋', '📝', '📌', '📍', '🌐', '📞', '✉️', '📅', '⏱️', '⏳'],
+                media: ['🎬', '🎥', '📸', '🖼️', '🎶', '🎧', '🎙️', '📻', '📺', '🎮', '🕹️', '🎨', '🖌️', '✨', '🍿', '📹', '📽️', '📼', '🔈', '🔊', '🎵', '🎼', '🎭', '🎤', '🎬', '📽️', '📷', '📹', '🎞️', '🎨', '🖌️', '🖍️', '✏️', '✒️', '📝', '📖', '📚', '💡', '🔥', '⚡', '⭐', '🌟', '🏆', '👑', '💎', '🎁', '🎉', '📣', '📢', '🔔', '❤️', '👍', '🎯', '🚀', '📍', '🌐', '💻', '🖥️', '📱', '🎮', '🕹️', '🎧', '🎙️', '📻', '📺', '🎶', '🎵', '🎼', '🍿', '📹', '📽️', '📼', '🔈', '🔊', '🎭', '🎤', '🎬', '📽️', '📷', '📹']
+            };
+
+            const icons = iconMap[cat] || iconMap.social;
+            const frag = document.createDocumentFragment();
+
+            icons.forEach((sym) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'p-1 bg-slate-100 hover:bg-indigo-100 hover:border-indigo-400 border rounded text-xs flex items-center justify-center transition';
+                btn.innerText = sym;
+                btn.onclick = function() {
+                    const inputIcon = document.getElementById('newCompIcon');
+                    if (inputIcon) inputIcon.value = sym;
+                    window.showToast(`Ikon ${sym} dipilih`, 'success');
+                };
+                frag.appendChild(btn);
+            });
+
+            grid.appendChild(frag);
+        };
+
+        window.openAddComponentModal = function(id = null) {
+            window.appState.editingComponentId = id;
+            const modal = document.getElementById('addComponentModal');
+            const titleEl = document.getElementById('modalComponentTitle');
+            
+            if (id) {
+                const c = window.appState.components.find(x => x.id === id);
+                if (c) {
+                    if (titleEl) titleEl.innerText = 'Edit Komponen';
+                    if (document.getElementById('newCompType')) document.getElementById('newCompType').value = c.type || 'link';
+                    if (document.getElementById('newCompTitle')) document.getElementById('newCompTitle').value = c.title || '';
+                    if (document.getElementById('newCompUrl')) document.getElementById('newCompUrl').value = c.url || '';
+                    if (document.getElementById('newCompContent')) document.getElementById('newCompContent').value = c.content || '';
+                    if (document.getElementById('newCompPassword')) document.getElementById('newCompPassword').value = c.password || '';
+                    if (document.getElementById('newCompIcon')) document.getElementById('newCompIcon').value = c.icon || '';
+                    if (document.getElementById('newCompColor')) document.getElementById('newCompColor').value = c.color || '#4F46E5';
+                    if (document.getElementById('newCompShape')) document.getElementById('newCompShape').value = c.shape || 'rounded-2xl';
+                    if (document.getElementById('newCompEffect')) document.getElementById('newCompEffect').value = c.effect || 'btn-effect-scale';
+                }
+            } else {
+                if (titleEl) titleEl.innerText = 'Tambah Komponen Baru';
+                if (document.getElementById('newCompType')) document.getElementById('newCompType').value = 'link';
+                if (document.getElementById('newCompTitle')) document.getElementById('newCompTitle').value = '';
+                if (document.getElementById('newCompUrl')) document.getElementById('newCompUrl').value = '';
+                if (document.getElementById('newCompContent')) document.getElementById('newCompContent').value = '';
+                if (document.getElementById('newCompPassword')) document.getElementById('newCompPassword').value = '';
+                if (document.getElementById('newCompIcon')) document.getElementById('newCompIcon').value = '';
+                if (document.getElementById('newCompColor')) document.getElementById('newCompColor').value = '#4F46E5';
+                if (document.getElementById('newCompShape')) document.getElementById('newCompShape').value = 'rounded-2xl';
+                if (document.getElementById('newCompEffect')) document.getElementById('newCompEffect').value = 'btn-effect-scale';
+            }
+            
+            window.updateCompModalFields();
+            window.switchIconPresetCategory(window.appState.currentIconPresetCat || 'social');
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeAddComponentModal = function() {
+            const modal = document.getElementById('addComponentModal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.syncLivePreviewRealtime = function() {
+            const previewContainer = document.getElementById('livePreviewContent');
+            const publicMain = document.getElementById('mainPublicContainer');
+            if (!previewContainer || !publicMain) return;
+
+            previewContainer.innerHTML = publicMain.innerHTML;
+            
+            const p = window.appState.profile;
+            if (p.background.startsWith('http') || p.background.startsWith('data:')) {
+                previewContainer.style.background = `url('${p.background}') center/cover no-repeat`;
+            } else {
+                previewContainer.style.background = p.background;
+            }
+            previewContainer.style.fontFamily = p.fontFamily || "'Inter', sans-serif";
+            previewContainer.style.fontSize = p.fontSize || '16px';
+            previewContainer.style.color = p.textColor || '#000000';
+        };
+
+        window.openAdminModal = function() {
+            if (window.appState.profile.isLoggedIn) {
+                document.getElementById('adminModal').classList.remove('hidden');
+                document.getElementById('adminLogoutBtn').classList.remove('hidden');
+                window.populateAdminFormFields();
+                window.switchAdminTab('profile');
+            } else {
+                document.getElementById('adminLoginModal').classList.remove('hidden');
+            }
+        };
+
+        window.closeAdminLoginModal = function() {
+            const errorMsg = document.getElementById('adminLoginErrorMsg');
+            if (errorMsg) errorMsg.classList.add('hidden');
+            document.getElementById('adminLoginModal').classList.add('hidden');
+        };
+
+        window.handleAdminLogin = function(e) {
+            e.preventDefault();
+            const input = document.getElementById('adminPasswordInput');
+            const errorMsg = document.getElementById('adminLoginErrorMsg');
+            if (!input) return;
+
+            if (input.value === window.appState.profile.password) {
+                window.appState.profile.isLoggedIn = true;
+                if (errorMsg) errorMsg.classList.add('hidden');
+                window.closeAdminLoginModal();
+                input.value = '';
+                window.showToast('Login berhasil!', 'success');
+                window.openAdminModal();
+            } else {
+                if (errorMsg) {
+                    errorMsg.innerText = 'Peringatan: Kata sandi administrator salah. Silakan periksa kembali.';
+                    errorMsg.classList.remove('hidden');
+                }
+                window.showToast('Kata sandi admin salah!', 'error');
+            }
+        };
+
+        window.toggleMapView = function(mapIframeId, mode) {
+            const iframe = document.getElementById(mapIframeId);
+            if (!iframe) return;
+            const currentQuery = iframe.getAttribute('data-query') || 'Indonesia';
+            let newSrc = '';
+            if (mode === 'street') {
+                newSrc = `https://maps.google.com/maps?q=${encodeURIComponent(currentQuery)}&t=k&z=17&ie=UTF8&iwloc=&output=embed`;
+            } else {
+                newSrc = `https://maps.google.com/maps?q=${encodeURIComponent(currentQuery)}&t=m&z=14&ie=UTF8&iwloc=&output=embed`;
+            }
+            iframe.src = newSrc;
+        };
+
+        window.toggleLoginPasswordVisibility = function() {
+            const input = document.getElementById('adminPasswordInput');
+            if (!input) return;
+            input.type = input.type === 'password' ? 'text' : 'password';
+        };
+
+        window.handleAdminLogout = function() {
+            window.appState.profile.isLoggedIn = false;
+            document.getElementById('adminLogoutBtn').classList.add('hidden');
+            window.closeAdminModal();
+            window.showToast('Berhasil keluar dari dashboard admin', 'info');
+        };
+
+        window.closeAdminModal = function() {
+            document.getElementById('adminModal').classList.add('hidden');
+        };
+
+        window.switchAdminTab = function(tab) {
+            const tabs = ['profile', 'components', 'presets', 'analytics'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+                const content = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
+                
+                if (btn && content) {
+                    const isAnalytics = (t === 'analytics');
+                    if (t === tab) {
+                        btn.className = 'px-3.5 py-2.5 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-1.5 whitespace-nowrap font-bold' + (isAnalytics ? ' hidden' : '');
+                        content.classList.remove('hidden');
+                    } else {
+                        btn.className = 'px-3.5 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-1.5 whitespace-nowrap' + (isAnalytics ? ' hidden' : '');
+                        content.classList.add('hidden');
+                    }
+                }
+            });
+
+            if (tab === 'components') window.renderAdminComponentsList();
+            if (tab === 'presets') window.switchPresetCategory(window.appState.currentPresetCat || 'pendidikan');
+        };
+
+        window.populateAdminFormFields = function() {
+            const p = window.appState.profile;
+            if (document.getElementById('inputName')) document.getElementById('inputName').value = p.name || '';
+            if (document.getElementById('inputBio')) document.getElementById('inputBio').value = p.bio || '';
+            if (document.getElementById('inputAvatar')) document.getElementById('inputAvatar').value = p.avatar || '';
+            if (document.getElementById('inputBackground')) document.getElementById('inputBackground').value = p.background || '';
+            if (document.getElementById('inputVerified')) document.getElementById('inputVerified').checked = !!p.verified;
+            if (document.getElementById('inputFontFamily')) document.getElementById('inputFontFamily').value = p.fontFamily || "'Inter', sans-serif";
+            if (document.getElementById('inputFontSize')) document.getElementById('inputFontSize').value = p.fontSize || '16px';
+            if (document.getElementById('inputTextColor')) document.getElementById('inputTextColor').value = p.textColor || '#000000';
+            if (document.getElementById('inputButtonTextColor')) document.getElementById('inputButtonTextColor').value = p.buttonTextColor || '#ffffff';
+            if (document.getElementById('inputAdminPassword')) document.getElementById('inputAdminPassword').value = p.password || 'admin';
+        };
+
+        window.updateAdminPasswordRealtime = function() {
+            const input = document.getElementById('inputAdminPassword');
+            if (input && input.value.trim() !== '') {
+                window.appState.profile.password = input.value.trim();
+                window.saveAppState();
+            }
+        };
+
+        window.toggleAdminPasswordSettingVisibility = function() {
+            const input = document.getElementById('inputAdminPassword');
+            if (input) input.type = input.type === 'password' ? 'text' : 'password';
+        };
+
+        window.updateProfileRealtime = function() {
+            const p = window.appState.profile;
+            if (document.getElementById('inputName')) p.name = document.getElementById('inputName').value;
+            if (document.getElementById('inputBio')) p.bio = document.getElementById('inputBio').value;
+            if (document.getElementById('inputAvatar')) p.avatar = document.getElementById('inputAvatar').value;
+            if (document.getElementById('inputBackground')) p.background = document.getElementById('inputBackground').value;
+            if (document.getElementById('inputVerified')) p.verified = document.getElementById('inputVerified').checked;
+            if (document.getElementById('inputFontFamily')) p.fontFamily = document.getElementById('inputFontFamily').value;
+            if (document.getElementById('inputFontSize')) p.fontSize = document.getElementById('inputFontSize').value;
+            if (document.getElementById('inputTextColor')) p.textColor = document.getElementById('inputTextColor').value;
+            if (document.getElementById('inputButtonTextColor')) p.buttonTextColor = document.getElementById('inputButtonTextColor').value;
+            if (document.getElementById('inputAdminPassword') && document.getElementById('inputAdminPassword').value.trim() !== '') {
+                p.password = document.getElementById('inputAdminPassword').value.trim();
+            }
+
+            window.saveAppState();
+            window.renderProfileView();
+            window.renderComponentsView();
+        };
+
+        window.saveProfileSettings = async function() {
+            window.updateProfileRealtime();
+            window.saveAppState();
+            
+            const p = window.appState.profile;
+            window.apiCall('saveProfile', {
+                Name: p.name,
+                Bio: p.bio,
+                Avatar: p.avatar,
+                Password: p.password,
+                Background: p.background,
+                FontFamily: p.fontFamily,
+                FontSize: p.fontSize,
+                TextColor: p.textColor,
+                ButtonTextColor: p.buttonTextColor
+            });
+
+            window.showToast('Pengaturan profil berhasil disimpan & selalu terupdate', 'success');
+        };
+
+        // Client-side Canvas Fast Image Compression
+        window.handleFileSelect = function(event, target) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                window.appState.cropperTargetField = target;
+                const cropperImg = document.getElementById('cropperImage');
+                if (!cropperImg) return;
+                
+                cropperImg.src = e.target.result;
+                document.getElementById('cropperModal').classList.remove('hidden');
+
+                if (window.appState.cropperInstance) {
+                    window.appState.cropperInstance.destroy();
+                }
+
+                setTimeout(() => {
+                    window.appState.cropperInstance = new Cropper(cropperImg, {
+                        aspectRatio: NaN,
+                        viewMode: 1
+                    });
+                }, 80);
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.closeCropModal = function() {
+            if (window.appState.cropperInstance) {
+                window.appState.cropperInstance.destroy();
+                window.appState.cropperInstance = null;
+            }
+            document.getElementById('cropperModal').classList.add('hidden');
+        };
+
+        window.applyCroppedImage = function() {
+            if (!window.appState.cropperInstance) return;
+            const canvas = window.appState.cropperInstance.getCroppedCanvas({
+                maxWidth: 800,
+                maxHeight: 800
+            });
+
+            if (canvas) {
+                const croppedData = canvas.toDataURL('image/jpeg', 0.65);
+                if (window.appState.cropperTargetField === 'avatar') {
+                    document.getElementById('inputAvatar').value = croppedData;
+                    window.updateProfileRealtime();
+                } else if (window.appState.cropperTargetField === 'background') {
+                    document.getElementById('inputBackground').value = croppedData;
+                    window.updateProfileRealtime();
+                } else if (window.appState.cropperTargetField === 'compIcon') {
+                    document.getElementById('newCompIcon').value = croppedData;
+                } else if (window.appState.cropperTargetField === 'compUrl') {
+                    document.getElementById('newCompUrl').value = croppedData;
+                }
+                window.saveAppState();
+                window.showToast('Gambar berhasil dipotong & diterapkan', 'success');
+            }
+            window.closeCropModal();
+        };
+
+        window.filterComponents = function(query) {
+            window.renderAdminComponentsList(query);
+        };
+
+        window.renderAdminComponentsList = function(filterQuery = '') {
+            const list = document.getElementById('adminComponentsList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            const items = window.appState.components.filter(c => {
+                if (!filterQuery) return true;
+                const q = filterQuery.toLowerCase();
+                return (c.title && c.title.toLowerCase().includes(q)) || (c.type && c.type.toLowerCase().includes(q));
+            });
+
+            if (items.length === 0) {
+                list.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Tidak ada komponen ditemukan.</div>`;
+                return;
+            }
+
+            const frag = document.createDocumentFragment();
+
+            items.forEach((c) => {
+                const card = document.createElement('div');
+                card.draggable = true;
+                const activeState = c.active !== false;
+                card.className = `border rounded-xl p-3 flex items-center justify-between gap-3 text-xs ${activeState ? 'bg-slate-50 border-slate-200' : 'bg-slate-200/60 border-slate-300 opacity-60'}`;
+                
+                let iconDisplay = c.icon || '🔗';
+                if (c.type === 'image') {
+                    iconDisplay = c.url ? `<img src="${c.url}" class="w-5 h-5 rounded object-cover inline">` : '🖼️';
+                } else if (c.icon && c.icon.startsWith('<svg')) {
+                    iconDisplay = c.icon;
+                } else if (c.icon && (c.icon.startsWith('http') || c.icon.startsWith('data:'))) {
+                    iconDisplay = `<img src="${c.icon}" class="w-5 h-5 rounded object-cover inline">`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                        <span class="drag-handle text-slate-400 hover:text-slate-700 text-sm">☰</span>
+                        <span class="flex-shrink-0 flex items-center justify-center">${iconDisplay}</span>
+                        <div class="truncate">
+                            <span class="font-bold text-slate-800 block truncate">${c.title || 'Komponen'}</span>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider font-mono">${c.type} ${c.password ? 'Protected' : ''} ${!activeState ? '(Disembunyikan)' : ''}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="window.toggleComponentVisibility('${c.id}')" class="px-2 py-1 border rounded-lg font-bold text-[10px] ${activeState ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700' : 'bg-slate-300 hover:bg-slate-400 text-slate-700'}" title="Tampilkan/Sembunyikan">
+                            ${activeState ? 'Tampil' : 'Sembunyi'}
+                        </button>
+                        <button onclick="window.openAddComponentModal('${c.id}')" class="p-1.5 bg-white border rounded-lg hover:bg-slate-100 text-slate-700" title="Edit">Edit</button>
+                        <button onclick="window.deleteComponent('${c.id}')" class="p-1.5 bg-white border rounded-lg hover:bg-red-50 text-red-600" title="Hapus">Hapus</button>
+                    </div>
+                `;
+
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', c.id);
+                    card.classList.add('opacity-50');
+                });
+                card.addEventListener('dragend', () => card.classList.remove('opacity-50'));
+                card.addEventListener('dragover', (e) => e.preventDefault());
+                card.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    const draggedId = e.dataTransfer.getData('text/plain');
+                    if (draggedId !== c.id) {
+                        const fromIdx = window.appState.components.findIndex(x => x.id === draggedId);
+                        const toIdx = window.appState.components.findIndex(x => x.id === c.id);
+                        if (fromIdx !== -1 && toIdx !== -1) {
+                            const [moved] = window.appState.components.splice(fromIdx, 1);
+                            window.appState.components.splice(toIdx, 0, moved);
+                            window.renderAdminComponentsList();
+                            window.renderComponentsView();
+                            window.saveAppState();
+
+                            const newIds = window.appState.components.map(x => x.id);
+                            window.apiCall('updateOrder', { newIds });
+                        }
+                    }
+                });
+
+                frag.appendChild(card);
+            });
+
+            list.appendChild(frag);
+        };
+
+        window.toggleComponentVisibility = async function(id) {
+            const comp = window.appState.components.find(c => c.id === id);
+            if (comp) {
+                comp.active = (comp.active === false) ? true : false;
+                window.renderAdminComponentsList();
+                window.renderComponentsView();
+                window.saveAppState();
+                
+                window.apiCall('saveComponent', comp);
+                window.showToast(comp.active ? 'Komponen ditampilkan' : 'Komponen disembunyikan', 'info');
+            }
+        };
+
+        window.updateCompModalFields = function() {
+            const type = document.getElementById('newCompType').value;
+            const lblTitle = document.getElementById('lblCompTitle');
+            const lblUrl = document.getElementById('lblCompUrl');
+            const lblContent = document.getElementById('lblCompContent');
+            const fieldUrlGroup = document.getElementById('fieldUrlGroup');
+            const fieldContentGroup = document.getElementById('fieldContentGroup');
+            const fieldPasswordGroup = document.getElementById('fieldPasswordGroup');
+            const fieldIconGroup = document.getElementById('fieldIconGroup');
+            const btnBrowseCompUrl = document.getElementById('btnBrowseCompUrl');
+
+            if (fieldUrlGroup) fieldUrlGroup.classList.remove('hidden');
+            if (fieldContentGroup) fieldContentGroup.classList.remove('hidden');
+            if (fieldPasswordGroup) fieldPasswordGroup.classList.remove('hidden');
+            if (fieldIconGroup) fieldIconGroup.classList.remove('hidden');
+            if (btnBrowseCompUrl) btnBrowseCompUrl.classList.add('hidden');
+
+            if (type === 'divider') {
+                if (lblTitle) lblTitle.innerText = 'Label Internal Pemisah (Opsional)';
+                if (fieldUrlGroup) fieldUrlGroup.classList.add('hidden');
+                if (fieldContentGroup) fieldContentGroup.classList.add('hidden');
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+                if (fieldIconGroup) fieldIconGroup.classList.add('hidden');
+            } else if (type === 'text') {
+                if (lblTitle) lblTitle.innerText = 'Judul Teks / Pengumuman';
+                if (lblContent) lblContent.innerText = 'Isi Teks / Informasi Pengumuman';
+                if (fieldUrlGroup) fieldUrlGroup.classList.add('hidden');
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+            } else if (type === 'image') {
+                if (lblTitle) lblTitle.innerText = 'Keterangan Gambar (Opsional)';
+                if (lblUrl) lblUrl.innerText = 'Pilih Gambar Banner / Foto (Atau masukkan URL)';
+                if (btnBrowseCompUrl) btnBrowseCompUrl.classList.remove('hidden');
+                if (fieldContentGroup) fieldContentGroup.classList.add('hidden');
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+                if (fieldIconGroup) fieldIconGroup.classList.add('hidden');
+            } else if (type === 'countdown') {
+                if (lblTitle) lblTitle.innerText = 'Judul Event / Acara';
+                if (lblUrl) lblUrl.innerText = 'Tanggal & Waktu Target (Format: YYYY-MM-DDTHH:MM)';
+                if (lblContent) lblContent.innerText = 'Subteks / Keterangan Event (Opsional)';
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+            } else if (type === 'schedule') {
+                if (lblTitle) lblTitle.innerText = 'Judul Jadwal / Agenda';
+                if (lblContent) lblContent.innerText = 'Daftar Kegiatan (1 per baris, Format: WAKTU | NAMA KEGIATAN)';
+                if (fieldUrlGroup) fieldUrlGroup.classList.add('hidden');
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+            } else if (type === 'map') {
+                if (lblTitle) lblTitle.innerText = 'Nama Lokasi / Tempat';
+                if (lblUrl) lblUrl.innerText = 'Alamat Lengkap / Query Maps / Link Google Maps';
+                if (lblContent) lblContent.innerText = 'Keterangan Lokasi / Jam Operasional';
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+            } else if (type === 'carousel') {
+                if (lblTitle) lblTitle.innerText = 'Judul Image Slider (Opsional)';
+                if (lblContent) lblContent.innerText = 'Daftar URL Gambar (Masukkan 1 URL Gambar per baris)';
+                if (fieldUrlGroup) fieldUrlGroup.classList.add('hidden');
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+            } else if (type === 'horizontal-link') {
+                if (lblTitle) lblTitle.innerText = 'Judul Bar Sosmed (Opsional)';
+                if (lblContent) lblContent.innerText = 'Daftar Link Sosmed (1 Link per baris). Klik tombol dibawah untuk menambah link sosmed instan:';
+                if (fieldUrlGroup) fieldUrlGroup.classList.add('hidden');
+                if (fieldPasswordGroup) fieldPasswordGroup.classList.add('hidden');
+
+                let socialHelperBox = document.getElementById('socialLinksHelperBox');
+                if (!socialHelperBox) {
+                    socialHelperBox = document.createElement('div');
+                    socialHelperBox.id = 'socialLinksHelperBox';
+                    socialHelperBox.className = 'mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5';
+                    socialHelperBox.innerHTML = `
+                        <span class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">+ Tambah Tautan Sosmed Instan:</span>
+                        <div class="flex flex-wrap gap-1.5 text-[10px] font-bold">
+                            <button type="button" onclick="window.addSocialLinkPreset('whatsapp')" class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md hover:bg-emerald-200 flex items-center gap-1">+ WhatsApp</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('instagram')" class="px-2 py-1 bg-pink-100 text-pink-800 rounded-md hover:bg-pink-200 flex items-center gap-1">+ Instagram</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('facebook')" class="px-2 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 flex items-center gap-1">+ Facebook</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('tiktok')" class="px-2 py-1 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 flex items-center gap-1">+ TikTok</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('youtube')" class="px-2 py-1 bg-red-100 text-red-800 rounded-md hover:bg-red-200 flex items-center gap-1">+ YouTube</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('telegram')" class="px-2 py-1 bg-sky-100 text-sky-800 rounded-md hover:bg-sky-200 flex items-center gap-1">+ Telegram</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('twitter')" class="px-2 py-1 bg-slate-200 text-slate-900 rounded-md hover:bg-slate-300 flex items-center gap-1">+ Twitter/X</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('linkedin')" class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-md hover:bg-indigo-200 flex items-center gap-1">+ LinkedIn</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('shopee')" class="px-2 py-1 bg-amber-100 text-amber-800 rounded-md hover:bg-amber-200 flex items-center gap-1">+ Shopee</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('tokopedia')" class="px-2 py-1 bg-green-100 text-green-800 rounded-md hover:bg-green-200 flex items-center gap-1">+ Tokopedia</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('email')" class="px-2 py-1 bg-rose-100 text-rose-800 rounded-md hover:bg-rose-200 flex items-center gap-1">+ Email</button>
+                            <button type="button" onclick="window.addSocialLinkPreset('website')" class="px-2 py-1 bg-purple-100 text-purple-800 rounded-md hover:bg-purple-200 flex items-center gap-1">+ Website</button>
+                        </div>
+                    `;
+                    if (fieldContentGroup) fieldContentGroup.appendChild(socialHelperBox);
+                } else {
+                    socialHelperBox.classList.remove('hidden');
+                }
+            } else if (type === 'whatsapp') {
+                if (lblTitle) lblTitle.innerText = 'Judul Tombol WhatsApp';
+                if (lblUrl) lblUrl.innerText = 'Nomor HP WhatsApp (Format: 628123456789)';
+                if (lblContent) lblContent.innerText = 'Draft Pesan Otomatis (Pre-filled Text)';
+            } else if (type === 'shop-item' || type === 'shop') {
+                if (lblTitle) lblTitle.innerText = 'Nama Produk Toko';
+                if (lblUrl) lblUrl.innerText = 'Link Pemesanan / Nomor WA Order';
+                if (lblContent) lblContent.innerText = 'Deskripsi Singkat & Harga (Contoh: Rp 149.000)';
+            } else if (type === 'payment-link' || type === 'payment') {
+                if (lblTitle) lblTitle.innerText = 'Nama Bank / E-Wallet / QRIS';
+                if (lblUrl) lblUrl.innerText = 'Nomor Rekening / ID E-Wallet';
+                if (lblContent) lblContent.innerText = 'Atas Nama (A.N.) / Keterangan Pembayaran';
+            } else {
+                if (lblTitle) lblTitle.innerText = 'Judul / Label Komponen';
+                if (lblUrl) lblUrl.innerText = 'URL / Link Tujuan';
+                if (lblContent) lblContent.innerText = 'Isi Konten / Detail Informasi';
+            }
+        };
+
+        window.renderComponentsView = function() {
+            const container = document.getElementById('componentsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const activeItems = window.appState.components.filter(c => c.active !== false);
+            const frag = document.createDocumentFragment();
+
+            activeItems.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'w-full';
+
+                if (c.type === 'divider') {
+                    item.innerHTML = `<hr class="my-4 border-t-2 border-slate-300/60 w-full rounded-full">`;
+                } 
+                else if (c.type === 'text') {
+                    item.innerHTML = `
+                        <div class="w-full p-4 rounded-2xl bg-white/85 backdrop-blur shadow-sm border border-white/40 text-left space-y-1">
+                            <h3 class="font-extrabold text-sm text-slate-900">${c.title || 'Pengumuman'}</h3>
+                            ${c.content ? `<p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${c.content}</p>` : ''}
+                        </div>
+                    `;
+                }
+                else if (c.type === 'image') {
+                    item.innerHTML = `
+                        <div class="w-full rounded-2xl overflow-hidden shadow-lg border border-white/40 bg-white/30">
+                            <img src="${c.url}" alt="${c.title || 'Banner'}" class="w-full h-auto max-h-72 object-cover" onerror="this.src='https://placehold.co/600x300/e2e8f0/475569?text=Gambar+Tidak+Tersedia'">
+                            ${c.title ? `<div class="p-2 text-xs font-bold text-slate-800 text-center bg-white/90">${c.title}</div>` : ''}
+                        </div>
+                    `;
+                }
+                else if (c.type === 'countdown') {
+                    const targetTime = c.url ? new Date(c.url).getTime() : (Date.now() + 86400000 * 3);
+                    const cid = `cnt_${c.id}`;
+                    item.innerHTML = `
+                        <div class="w-full bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 text-white rounded-2xl p-4 sm:p-5 shadow-2xl border border-indigo-500/30 text-center space-y-3">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <h4 class="font-extrabold text-xs sm:text-sm tracking-wide uppercase">${c.title || 'Hitungan Mundur Event'}</h4>
+                            </div>
+                            ${c.content ? `<p class="text-xs text-slate-300 font-medium">${c.content}</p>` : ''}
+                            <div id="${cid}" data-target="${targetTime}" class="countdown-timer-box grid grid-cols-4 gap-2 pt-1 text-center">
+                                <div class="bg-white/10 backdrop-blur rounded-xl p-2 border border-white/10">
+                                    <span class="days font-black text-lg sm:text-2xl text-amber-300 block leading-none">00</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-300 mt-1 block">Hari</span>
+                                </div>
+                                <div class="bg-white/10 backdrop-blur rounded-xl p-2 border border-white/10">
+                                    <span class="hours font-black text-lg sm:text-2xl text-amber-300 block leading-none">00</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-300 mt-1 block">Jam</span>
+                                </div>
+                                <div class="bg-white/10 backdrop-blur rounded-xl p-2 border border-white/10">
+                                    <span class="minutes font-black text-lg sm:text-2xl text-amber-300 block leading-none">00</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-300 mt-1 block">Menit</span>
+                                </div>
+                                <div class="bg-white/10 backdrop-blur rounded-xl p-2 border border-white/10">
+                                    <span class="seconds font-black text-lg sm:text-2xl text-amber-300 block leading-none">00</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-300 mt-1 block">Detik</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (c.type === 'schedule') {
+                    const lines = (c.content || '').split('\n').filter(l => l.trim().length > 0);
+                    let agendaRows = lines.map(line => {
+                        const parts = line.split('|');
+                        const time = parts[0] ? parts[0].trim() : '00:00';
+                        const desc = parts[1] ? parts[1].trim() : line.trim();
+                        return `
+                            <div class="flex items-start gap-2.5 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="bg-indigo-600 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-sm">${time}</span>
+                                <span class="text-xs font-semibold text-slate-800 leading-snug">${desc}</span>
+                            </div>
+                        `;
+                    }).join('');
+                    if (!agendaRows) agendaRows = `<div class="text-xs text-slate-400 p-2">Belum ada agenda kegiatan.</div>`;
+
+                    item.innerHTML = `
+                        <div class="w-full bg-white/95 backdrop-blur rounded-2xl p-4 shadow-xl border border-white/60 text-left space-y-3">
+                            <div class="flex items-center justify-between border-b pb-2">
+                                <span class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5">${c.title || 'Jadwal Kegiatan'}</span>
+                                <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-md uppercase">Agenda</span>
+                            </div>
+                            <div class="space-y-2">
+                                ${agendaRows}
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (c.type === 'map') {
+                    const mapQuery = c.url || c.title || 'Indonesia';
+                    const mapQueryEncoded = encodeURIComponent(mapQuery);
+                    const mapEmbedUrl = `https://maps.google.com/maps?q=${mapQueryEncoded}&t=m&z=14&ie=UTF8&iwloc=&output=embed`;
+                    let directMapLink = `https://www.google.com/maps/search/?api=1&query=${mapQueryEncoded}`;
+                    if (c.url && c.url.startsWith('http') && c.url.includes('maps')) directMapLink = c.url;
+
+                    const mapIframeId = `map_iframe_${c.id}`;
+
+                    item.innerHTML = `
+                        <div class="w-full bg-white/95 backdrop-blur rounded-2xl p-3.5 shadow-xl border border-white/60 text-left space-y-2.5">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <span class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5">${c.title || 'Peta Lokasi'}</span>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="window.toggleMapView('${mapIframeId}', 'normal')" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-2 py-1 rounded-md transition">
+                                        Normal
+                                    </button>
+                                    <button onclick="window.toggleMapView('${mapIframeId}', 'street')" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-2 py-1 rounded-md transition">
+                                        Satelit
+                                    </button>
+                                    <a href="${directMapLink}" target="_blank" class="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1 rounded-lg transition shadow-sm ml-1">
+                                        Buka Maps ↗
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="w-full h-44 rounded-xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100">
+                                <iframe id="${mapIframeId}" data-query="${mapQuery}" src="${mapEmbedUrl}" class="w-full h-full border-0" allowfullscreen="" loading="lazy"></iframe>
+                            </div>
+                            ${c.content ? `<p class="text-xs text-slate-600 font-medium px-1">${c.content}</p>` : ''}
+                        </div>
+                    `;
+                }
+                else if (c.type === 'carousel') {
+                    let images = (c.content || '').split('\n').map(u => u.trim()).filter(u => u.length > 0);
+                    if (images.length === 0 && c.url) images = [c.url];
+                    if (images.length === 0) images = ['https://picsum.photos/seed/bio_carousel_1/800/400'];
+
+                    const carId = `car_${c.id}`;
+                    let slides = images.map((imgUrl, idx) => `
+                        <div class="carousel-slide border-box flex-shrink-0 w-full h-44 sm:h-52 relative rounded-xl overflow-hidden ${idx === 0 ? 'block' : 'hidden'}">
+                            <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x300/e2e8f0/475569?text=Slide+${idx+1}'">
+                            <div class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur">${idx+1}/${images.length}</div>
+                        </div>
+                    `).join('');
+
+                    item.innerHTML = `
+                        <div class="w-full bg-white/95 backdrop-blur rounded-2xl p-3.5 shadow-xl border border-white/60 text-left space-y-2.5" id="${carId}">
+                            ${c.title ? `<h4 class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5">${c.title}</h4>` : ''}
+                            <div class="relative w-full rounded-xl overflow-hidden bg-slate-900">
+                                <div class="slides-container flex w-full">
+                                    ${slides}
+                                </div>
+                                ${images.length > 1 ? `
+                                    <button onclick="window.rotateCarousel('${carId}', -1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs backdrop-blur transition shadow">❮</button>
+                                    <button onclick="window.rotateCarousel('${carId}', 1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs backdrop-blur transition shadow">❯</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (c.type === 'whatsapp') {
+                    let waUrl = `https://wa.me/${(c.url || '').replace(/[^0-9]/g, '')}`;
+                    if (c.content) waUrl += `?text=${encodeURIComponent(c.content)}`;
+                    let shapeClass = c.shape || 'rounded-2xl';
+                    let effectClass = (c.effect && c.effect !== 'none') ? c.effect : 'btn-effect-scale';
+                    
+                    item.innerHTML = `
+                        <a href="${waUrl}" target="_blank" style="background-color: ${c.color || '#25D366'}; color: #ffffff;" class="${effectClass} ${shapeClass} w-full p-3.5 shadow-lg flex items-center justify-between font-bold text-xs sm:text-sm">
+                            <div class="flex items-center gap-2.5">
+                                <span class="inline-flex items-center justify-center">${window.svgBrandIcons.whatsapp}</span>
+                                <div class="text-left">
+                                    <span class="block leading-tight">${c.title || 'Chat WhatsApp Direct'}</span>
+                                    <span class="text-[10px] font-normal opacity-90 block">Buka Percakapan Pesan Langsung</span>
+                                </div>
+                            </div>
+                            <span>➔</span>
+                        </a>
+                    `;
+                }
+                else if (c.type === 'shop-item' || c.type === 'shop') {
+                    let buyUrl = c.url || '#';
+                    if (buyUrl && !buyUrl.startsWith('http') && !buyUrl.startsWith('mailto') && !buyUrl.startsWith('tel')) {
+                        if (/^[0-9]+$/.test(buyUrl.replace(/\+/g, ''))) {
+                            buyUrl = `https://wa.me/${buyUrl.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo, saya ingin memesan produk: ' + c.title)}`;
+                        } else {
+                            buyUrl = 'https://' + buyUrl;
+                        }
+                    }
+
+                    item.innerHTML = `
+                        <div class="w-full bg-white/95 backdrop-blur rounded-2xl p-4 shadow-xl border border-white/60 text-left flex flex-col sm:flex-row items-center gap-4">
+                            ${c.icon ? `<img src="${c.icon}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover flex-shrink-0 shadow-sm border">` : ''}
+                            <div class="flex-1 min-w-0 w-full space-y-1">
+                                <h4 class="font-extrabold text-sm text-slate-900 truncate">${c.title || 'Produk Toko'}</h4>
+                                <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">${c.content || 'Detail informasi produk...'}</p>
+                                <div class="pt-2 flex items-center justify-between gap-2">
+                                    <span class="font-black text-indigo-600 text-sm sm:text-base">${c.price || 'Rp -'}</span>
+                                    <a href="${buyUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                                        Beli Sekarang
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (c.type === 'payment-link' || c.type === 'payment') {
+                    item.innerHTML = `
+                        <div class="w-full bg-white/95 backdrop-blur rounded-2xl p-4 shadow-xl border border-white/60 text-left space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5">${c.title || 'Metode Pembayaran'}</span>
+                                <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-md uppercase">E-Wallet / Rekening</span>
+                            </div>
+                            ${c.icon ? `<div class="text-center bg-slate-50 p-2 rounded-xl border"><img src="${c.icon}" class="max-h-48 mx-auto rounded-lg object-contain"></div>` : ''}
+                            <div class="bg-slate-100 p-3 rounded-xl flex items-center justify-between gap-2 border">
+                                <div class="min-w-0 flex-1">
+                                    <span class="text-[10px] text-slate-500 font-bold block uppercase tracking-wider">NOMOR REKENING / ID:</span>
+                                    <span class="font-mono font-black text-sm text-slate-900 tracking-wider block truncate">${c.url || '-'}</span>
+                                    ${c.content ? `<span class="text-[11px] font-semibold text-slate-600 block mt-0.5">A.N. ${c.content}</span>` : ''}
+                                </div>
+                                <button onclick="window.copyToClipboard('${c.url || ''}', '${c.title || 'Rekening'}')" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition">
+                                    Salin
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (c.type === 'horizontal-link') {
+                    let linksList = [];
+                    if (c.content) {
+                        const lines = c.content.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                        lines.forEach(line => {
+                            let key = 'website';
+                            let targetUrl = line;
+
+                            const lower = line.toLowerCase();
+                            if (lower.includes('wa.me') || lower.includes('whatsapp')) key = 'whatsapp';
+                            else if (lower.includes('instagram.com') || lower.includes('instagram')) key = 'instagram';
+                            else if (lower.includes('facebook.com') || lower.includes('fb.me') || lower.includes('facebook')) key = 'facebook';
+                            else if (lower.includes('tiktok.com') || lower.includes('tiktok')) key = 'tiktok';
+                            else if (lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('youtube')) key = 'youtube';
+                            else if (lower.includes('t.me') || lower.includes('telegram')) key = 'telegram';
+                            else if (lower.includes('twitter.com') || lower.includes('x.com') || lower.includes('twitter')) key = 'twitter';
+                            else if (lower.includes('linkedin.com') || lower.includes('linkedin')) key = 'linkedin';
+                            else if (lower.includes('shopee.co') || lower.includes('shopee')) key = 'shopee';
+                            else if (lower.includes('tokopedia.com') || lower.includes('tokopedia')) key = 'tokopedia';
+                            else if (lower.includes('mailto:') || lower.includes('email') || lower.includes('@')) key = 'email';
+
+                            if (key === 'whatsapp' && !targetUrl.startsWith('http')) {
+                                targetUrl = `https://wa.me/${targetUrl.replace(/[^0-9]/g, '')}`;
+                            } else if (key === 'email' && !targetUrl.startsWith('mailto:') && targetUrl.includes('@') && !targetUrl.startsWith('http')) {
+                                targetUrl = `mailto:${targetUrl}`;
+                            } else if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('mailto:') && !targetUrl.startsWith('tel:')) {
+                                targetUrl = 'https://' + targetUrl;
+                            }
+
+                            linksList.push({ key, url: targetUrl });
+                        });
+                    }
+
+                    if (linksList.length === 0) {
+                        let defaultUrl = c.url || '#';
+                        linksList = [
+                            { key: 'whatsapp', url: defaultUrl.includes('http') ? defaultUrl : 'https://wa.me/' + defaultUrl.replace(/[^0-9]/g, '') },
+                            { key: 'instagram', url: 'https://instagram.com' },
+                            { key: 'facebook', url: 'https://facebook.com' },
+                            { key: 'tiktok', url: 'https://tiktok.com' }
+                        ];
+                    }
+
+                    let iconsHtml = linksList.map(item => `
+                        <a href="${item.url}" target="_blank" class="p-3 bg-white/95 backdrop-blur rounded-2xl shadow-md border border-white/60 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">
+                            ${window.svgBrandIcons[item.key] || window.svgBrandIcons.website}
+                        </a>
+                    `).join('');
+
+                    item.innerHTML = `
+                        <div class="w-full flex flex-col items-center gap-2">
+                            ${c.title ? `<span class="text-xs font-bold text-slate-800 drop-shadow-sm">${c.title}</span>` : ''}
+                            <div class="w-full flex items-center justify-center gap-3 p-1 flex-wrap">
+                                ${iconsHtml}
+                            </div>
+                        </div>
+                    `;
+                }
+                else {
+                    let bgStyle = `background-color: ${c.color || '#4F46E5'}; color: ${window.appState.profile.buttonTextColor || '#ffffff'};`;
+                    let shapeClass = c.shape || 'rounded-2xl';
+                    let effectClass = (c.effect && c.effect !== 'none') ? c.effect : 'btn-effect-scale';
+                    
+                    let iconHtml = '';
+                    if (c.icon) {
+                        if (c.icon.startsWith('<svg')) {
+                            iconHtml = `<span class="inline-flex items-center justify-center">${c.icon}</span>`;
+                        } else if (c.icon.startsWith('http') || c.icon.startsWith('data:')) {
+                            iconHtml = `<img src="${c.icon}" class="w-5 h-5 rounded-md object-cover inline-block flex-shrink-0">`;
+                        } else {
+                            iconHtml = `<span class="text-base leading-none">${c.icon}</span>`;
+                        }
+                    }
+
+                    let lockHtml = c.password ? `<svg class="w-3.5 h-3.5 opacity-75 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>` : '';
+
+                    item.innerHTML = `
+                        <button onclick="window.handleComponentClick('${c.id}')" style="${bgStyle}" class="${effectClass} ${shapeClass} w-full p-3.5 shadow-lg flex items-center justify-between font-bold text-xs sm:text-sm">
+                            <div class="flex items-center gap-2.5 truncate">
+                                ${iconHtml}
+                                <span class="truncate">${c.title}</span>
+                            </div>
+                            ${lockHtml}
+                        </button>
+                    `;
+                }
+
+                frag.appendChild(item);
+            });
+
+            container.appendChild(frag);
+            window.syncLivePreviewRealtime();
+            window.startCountdownTimers();
+        };
+
+        window.rotateCarousel = function(carouselId, direction) {
+            const container = document.getElementById(carouselId);
+            if (!container) return;
+            const slides = container.querySelectorAll('.carousel-slide');
+            if (!slides || slides.length === 0) return;
+
+            let activeIdx = 0;
+            slides.forEach((slide, idx) => {
+                if (!slide.classList.contains('hidden')) activeIdx = idx;
+                slide.classList.add('hidden');
+            });
+
+            let nextIdx = (activeIdx + direction + slides.length) % slides.length;
+            slides[nextIdx].classList.remove('hidden');
+        };
+
+        window.startCountdownTimers = function() {
+            if (window.countdownInterval) clearInterval(window.countdownInterval);
+
+            function updateTimers() {
+                const timerBoxes = document.querySelectorAll('.countdown-timer-box');
+                timerBoxes.forEach(box => {
+                    const targetStr = box.getAttribute('data-target');
+                    if (!targetStr) return;
+                    const target = parseInt(targetStr, 10);
+                    const now = Date.now();
+                    const diff = Math.max(0, target - now);
+
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                    const minutes = Math.floor((diff / 1000 / 60) % 60);
+                    const seconds = Math.floor((diff / 1000) % 60);
+
+                    const daysEl = box.querySelector('.days');
+                    const hoursEl = box.querySelector('.hours');
+                    const minsEl = box.querySelector('.minutes');
+                    const secsEl = box.querySelector('.seconds');
+
+                    if (daysEl) daysEl.innerText = String(days).padStart(2, '0');
+                    if (hoursEl) hoursEl.innerText = String(hours).padStart(2, '0');
+                    if (minsEl) minsEl.innerText = String(minutes).padStart(2, '0');
+                    if (secsEl) secsEl.innerText = String(seconds).padStart(2, '0');
+                });
+            }
+
+            updateTimers();
+            window.countdownInterval = setInterval(updateTimers, 1000);
+        };
+
+        window.saveComponentItem = async function() {
+            const type = document.getElementById('newCompType').value;
+            const title = document.getElementById('newCompTitle').value.trim();
+            const url = document.getElementById('newCompUrl').value.trim();
+            const content = document.getElementById('newCompContent').value.trim();
+            const password = document.getElementById('newCompPassword').value.trim();
+            const icon = document.getElementById('newCompIcon').value.trim();
+            const color = document.getElementById('newCompColor').value;
+            const shape = document.getElementById('newCompShape') ? document.getElementById('newCompShape').value : 'rounded-2xl';
+            const effect = document.getElementById('newCompEffect') ? document.getElementById('newCompEffect').value : 'btn-effect-scale';
+
+            if (!title && type !== 'divider' && type !== 'image') {
+                window.showToast('Judul komponen wajib diisi', 'error');
+                return;
+            }
+
+            if (type === 'image' && !url) {
+                window.showToast('Silakan pilih atau masukkan URL gambar banner', 'error');
+                return;
+            }
+
+            let price = '';
+            if (type === 'shop-item' || type === 'shop') {
+                const priceMatch = content.match(/Rp\s*[\d\.\,]+/i);
+                if (priceMatch) price = priceMatch[0];
+            }
+
+            let targetComp = null;
+            if (window.appState.editingComponentId) {
+                targetComp = window.appState.components.find(c => c.id === window.appState.editingComponentId);
+                if (targetComp) {
+                    Object.assign(targetComp, { type, title, url, content, price, password, icon, color, shape, effect });
+                }
+            } else {
+                targetComp = {
+                    id: 'c_' + Date.now(),
+                    type,
+                    title,
+                    url,
+                    content,
+                    price,
+                    password,
+                    icon: icon || '',
+                    active: true,
+                    color: color || '#4F46E5',
+                    shape: shape || 'rounded-2xl',
+                    effect: effect || 'btn-effect-scale'
+                };
+                window.appState.components.push(targetComp);
+            }
+
+            window.saveAppState();
+            window.renderAdminComponentsList();
+            window.renderComponentsView();
+            window.closeAddComponentModal();
+
+            if (targetComp) {
+                window.apiCall('saveComponent', targetComp);
+            }
+            window.showToast('Komponen berhasil disimpan & selalu terupdate', 'success');
+        };
+
+        window.deleteComponent = async function(id) {
+            window.appState.components = window.appState.components.filter(c => c.id !== id);
+            window.saveAppState();
+            window.renderAdminComponentsList();
+            window.renderComponentsView();
+            
+            window.apiCall('deleteLink', { id });
+            window.showToast('Komponen berhasil dihapus', 'info');
+        };
+
+        window.switchPresetCategory = function(cat) {
+            window.appState.currentPresetCat = cat;
+            ['pendidikan', 'pemandangan', 'gradient', 'tekstur', 'gelap', 'avatar'].forEach(c => {
+                const btn = document.getElementById('presetCat_' + c);
+                if (btn) {
+                    if (c === cat) btn.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-bold';
+                    else btn.className = 'px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold';
+                }
+            });
+
+            const grid = document.getElementById('presetGalleryGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const frag = document.createDocumentFragment();
+
+            for (let i = 1; i <= 50; i++) {
+                let bgVal = '';
+                let label = `Preset ${i}`;
+
+                if (cat === 'pendidikan') {
+                    bgVal = `https://picsum.photos/seed/edu_bg_${i}/800/600`;
+                    label = `Edu ${i}`;
+                } else if (cat === 'pemandangan') {
+                    bgVal = `https://picsum.photos/seed/nature_bg_${i}/800/600`;
+                    label = `Alam ${i}`;
+                } else if (cat === 'gradient') {
+                    const hue1 = (i * 25) % 360;
+                    const hue2 = (hue1 + 60) % 360;
+                    bgVal = `linear-gradient(135deg, hsl(${hue1}, 70%, 50%) 0%, hsl(${hue2}, 70%, 40%) 100%)`;
+                    label = `Grad ${i}`;
+                } else if (cat === 'tekstur') {
+                    bgVal = `https://picsum.photos/seed/texture_bg_${i}/800/600`;
+                    label = `Tekstur ${i}`;
+                } else if (cat === 'gelap') {
+                    const darkHue = (i * 30) % 360;
+                    bgVal = `linear-gradient(135deg, hsl(${darkHue}, 30%, 10%) 0%, #090d16 100%)`;
+                    label = `Gelap ${i}`;
+                } else if (cat === 'avatar') {
+                    bgVal = `https://i.pravatar.cc/300?img=${i}`;
+                    label = `Avatar ${i}`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'group relative rounded-xl overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:shadow-md transition h-24 flex items-center justify-center text-center p-2';
+                
+                if (bgVal.startsWith('http')) {
+                    card.style.background = `url('${bgVal}') center/cover no-repeat`;
+                } else {
+                    card.style.background = bgVal;
+                }
+
+                card.innerHTML = `
+                    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition"></div>
+                    <span class="relative z-10 text-white font-bold text-[10px] drop-shadow">${label}</span>
+                `;
+
+                card.onclick = function() {
+                    if (cat === 'avatar') {
+                        document.getElementById('inputAvatar').value = bgVal;
+                        window.showToast(`Avatar Preset ${i} diterapkan`, 'success');
+                    } else {
+                        document.getElementById('inputBackground').value = bgVal;
+                        window.showToast(`Background Preset ${i} diterapkan`, 'success');
+                    }
+                    window.updateProfileRealtime();
+                    window.saveAppState();
+                };
+
+                frag.appendChild(card);
+            }
+
+            grid.appendChild(frag);
+        };
+
+        window.handleComponentClick = function(id) {
+            const comp = window.appState.components.find(c => c.id === id);
+            if (!comp) return;
+
+            if (comp.password) {
+                window.appState.pendingProtectedUrl = comp.url;
+                window.appState.pendingCompPassword = comp.password;
+                document.getElementById('linkPasswordInput').value = '';
+                document.getElementById('linkPasswordModal').classList.remove('hidden');
+            } else {
+                window.openTargetLink(comp.url);
+            }
+        };
+
+        window.closeLinkPasswordModal = function() {
+            document.getElementById('linkPasswordModal').classList.add('hidden');
+            window.appState.pendingProtectedUrl = null;
+            window.appState.pendingCompPassword = null;
+        };
+
+        window.verifyLinkPassword = function() {
+            const input = document.getElementById('linkPasswordInput');
+            if (!input) return;
+
+            if (input.value === window.appState.pendingCompPassword) {
+                const targetUrl = window.appState.pendingProtectedUrl;
+                window.closeLinkPasswordModal();
+                window.openTargetLink(targetUrl);
+            } else {
+                window.showToast('Kata sandi link salah!', 'error');
+            }
+        };
+
+        window.openTargetLink = function(url) {
+            if (!url) return;
+            let fullUrl = url;
+            if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://') && !fullUrl.startsWith('mailto:') && !fullUrl.startsWith('tel:')) {
+                fullUrl = 'https://' + fullUrl;
+            }
+            window.open(fullUrl, '_blank');
+        };
+
+        window.openLivePreview = function() {
+            const modal = document.getElementById('livePreviewModal');
+            if (!modal) return;
+            window.syncLivePreviewRealtime();
+            modal.classList.remove('hidden');
+        };
+
+        window.closeLivePreviewModal = function() {
+            document.getElementById('livePreviewModal').classList.add('hidden');
+        };
+
+        window.openStandalonePreview = function() {
+            window.open(window.location.href, '_blank');
+        };
+
+        // Instant Initialization on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            window.loadLocalState();
+            window.renderProfileView();
+            window.renderComponentsView();
+            window.syncWithBackend();
+        });
+    </script>
+</body>
+</html>
