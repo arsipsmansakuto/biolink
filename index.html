@@ -123,7 +123,7 @@
 
     <!-- GOOGLE APPS SCRIPT BACKEND URL CONFIGURATION -->
     <script>
-        const GAS_BACKEND_URL = "https://script.google.com/macros/s/AKfycbzvyeXSYgxgyaMgaih-wYFZOVZhlMTSe3n4rglWMUuNLMg0LHm2IeXMfGR-pAeiQmvN/exec";
+        const GAS_BACKEND_URL = "https://script.google.com/macros/s/AKfycbzU6UjWaZxYGFpKMHGw6TCDs4cED_f2XRKr0fEibToQQWot8fY-q2_oEzn4-V2lb0QB/exec";
     </script>
 
     <!-- SMART WARNING BANNER FOR CONFIG UNSET -->
@@ -399,7 +399,7 @@
         </div>
     </div>
 
-    <!-- MODAL ADD/EDIT COMPONENT (EMBED MEDIA HIDDEN PER INSTRUCTION) -->
+    <!-- MODAL ADD/EDIT COMPONENT -->
     <div id="addComponentModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-3 sm:p-4 hidden">
         <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
             <div class="bg-indigo-900 text-white p-4 flex justify-between items-center">
@@ -710,12 +710,24 @@
                 const apiRes = await window.apiCall('getAppData');
                 if (apiRes && apiRes.success && apiRes.data) {
                     let hasNew = false;
-                    if (apiRes.data.profile && Object.keys(apiRes.data.profile).length > 0) {
-                        // Merge profile gently without overwriting fresher local edits
-                        window.appState.profile = { ...window.appState.profile, ...apiRes.data.profile, isLoggedIn: false };
+                    const pData = apiRes.data.profile;
+                    if (pData && Object.keys(pData).length > 0) {
+                        window.appState.profile = {
+                            name: pData.name || pData.Name || window.appState.profile.name,
+                            bio: pData.bio || pData.Bio || window.appState.profile.bio,
+                            avatar: pData.avatar || pData.Avatar || window.appState.profile.avatar,
+                            background: pData.background || pData.Background || window.appState.profile.background,
+                            fontFamily: pData.fontFamily || pData.FontFamily || window.appState.profile.fontFamily,
+                            fontSize: pData.fontSize || pData.FontSize || window.appState.profile.fontSize,
+                            textColor: pData.textColor || pData.TextColor || window.appState.profile.textColor,
+                            buttonTextColor: pData.buttonTextColor || pData.ButtonTextColor || window.appState.profile.buttonTextColor,
+                            verified: (pData.verified !== undefined) ? (pData.verified === true || pData.verified === 'true') : ((pData.VerifiedBadge !== undefined) ? (pData.VerifiedBadge === true || pData.VerifiedBadge === 'true') : window.appState.profile.verified),
+                            password: pData.password || pData.Password || window.appState.profile.password,
+                            isLoggedIn: window.appState.profile.isLoggedIn
+                        };
                         hasNew = true;
                     }
-                    if (apiRes.data.links && Array.isArray(apiRes.data.links) && apiRes.data.links.length > 0) {
+                    if (apiRes.data.links && Array.isArray(apiRes.data.links)) {
                         window.appState.components = apiRes.data.links;
                         hasNew = true;
                     }
@@ -723,6 +735,7 @@
                         window.saveAppState();
                         window.renderProfileView();
                         window.renderComponentsView();
+                        window.populateAdminFormFields();
                     }
                 }
             } catch(e) {
@@ -1004,6 +1017,7 @@
             if (input && input.value.trim() !== '') {
                 window.appState.profile.password = input.value.trim();
                 window.saveAppState();
+                window.saveProfileSettings();
             }
         };
 
@@ -1037,7 +1051,7 @@
             window.saveAppState();
             
             const p = window.appState.profile;
-            window.apiCall('saveProfile', {
+            const res = await window.apiCall('saveProfile', {
                 Name: p.name,
                 Bio: p.bio,
                 Avatar: p.avatar,
@@ -1046,8 +1060,20 @@
                 FontFamily: p.fontFamily,
                 FontSize: p.fontSize,
                 TextColor: p.textColor,
-                ButtonTextColor: p.buttonTextColor
+                ButtonTextColor: p.buttonTextColor,
+                VerifiedBadge: p.verified ? 'true' : 'false'
             });
+
+            if (res && res.data && res.data.Avatar) {
+                p.avatar = res.data.Avatar;
+                if (document.getElementById('inputAvatar')) document.getElementById('inputAvatar').value = p.avatar;
+            }
+            if (res && res.data && res.data.Background) {
+                p.background = res.data.Background;
+                if (document.getElementById('inputBackground')) document.getElementById('inputBackground').value = p.background;
+            }
+            window.saveAppState();
+            window.renderProfileView();
 
             window.showToast('Pengaturan profil berhasil disimpan & selalu terupdate', 'success');
         };
@@ -1088,11 +1114,11 @@
             document.getElementById('cropperModal').classList.add('hidden');
         };
 
-        window.applyCroppedImage = function() {
+        window.applyCroppedImage = async function() {
             if (!window.appState.cropperInstance) return;
             const canvas = window.appState.cropperInstance.getCroppedCanvas({
-                maxWidth: 800,
-                maxHeight: 800
+                maxWidth: 600,
+                maxHeight: 600
             });
 
             if (canvas) {
@@ -1100,9 +1126,11 @@
                 if (window.appState.cropperTargetField === 'avatar') {
                     document.getElementById('inputAvatar').value = croppedData;
                     window.updateProfileRealtime();
+                    window.saveProfileSettings();
                 } else if (window.appState.cropperTargetField === 'background') {
                     document.getElementById('inputBackground').value = croppedData;
                     window.updateProfileRealtime();
+                    window.saveProfileSettings();
                 } else if (window.appState.cropperTargetField === 'compIcon') {
                     document.getElementById('newCompIcon').value = croppedData;
                 } else if (window.appState.cropperTargetField === 'compUrl') {
@@ -1189,7 +1217,8 @@
                             window.saveAppState();
 
                             const newIds = window.appState.components.map(x => x.id);
-                            window.apiCall('updateOrder', { newIds });
+                            await window.apiCall('updateOrder', { newIds });
+                            window.showToast('Urutan komponen berhasil disimpan ke spreadsheet', 'success');
                         }
                     }
                 });
@@ -1208,7 +1237,7 @@
                 window.renderComponentsView();
                 window.saveAppState();
                 
-                window.apiCall('saveComponent', comp);
+                await window.apiCall('saveComponent', comp);
                 window.showToast(comp.active ? 'Komponen ditampilkan' : 'Komponen disembunyikan', 'info');
             }
         };
@@ -1734,7 +1763,13 @@
             window.closeAddComponentModal();
 
             if (targetComp) {
-                window.apiCall('saveComponent', targetComp);
+                const res = await window.apiCall('saveComponent', targetComp);
+                if (res && res.id && res.icon) {
+                    targetComp.icon = res.icon;
+                    if (res.url && type === 'image') targetComp.url = res.url;
+                    window.saveAppState();
+                    window.renderComponentsView();
+                }
             }
             window.showToast('Komponen berhasil disimpan & selalu terupdate', 'success');
         };
@@ -1745,7 +1780,7 @@
             window.renderAdminComponentsList();
             window.renderComponentsView();
             
-            window.apiCall('deleteLink', { id });
+            await window.apiCall('deleteLink', { id });
             window.showToast('Komponen berhasil dihapus', 'info');
         };
 
@@ -1815,7 +1850,7 @@
                         window.showToast(`Background Preset ${i} diterapkan`, 'success');
                     }
                     window.updateProfileRealtime();
-                    window.saveAppState();
+                    window.saveProfileSettings();
                 };
 
                 frag.appendChild(card);
