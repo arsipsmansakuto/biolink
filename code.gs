@@ -1,458 +1,620 @@
 /**
- * BIO LINK PRO v7.0 TURBO - ENTERPRISE SUITE 2026
- * Backend Engine: Google Apps Script (Code.gs)
- * Otomatisasi Database Google Sheets & Manajemen Media Google Drive
+ * ============================================================================
+ * KSL BIO LINK - MULTI-PROJECT MANAGER (BACKEND GOOGLE APPS SCRIPT)
+ * Versi: 5.1 (Full Module, Appearance Enhancements & Multi-Bio Support)
+ * ============================================================================
+ * Struktur Sheet yang otomatis dibuat:
+ *  1. SETTINGS     : Konfigurasi global & deployment metadata
+ *  2. USERS        : Akun administrator & editor
+ *  3. PROJECTS     : Multi Bio profil (slug, nama, bio, avatar, tema, font, button style)
+ *  4. LINKS        : Daftar tautan publik & modul smart campaign (URL kondisional)
+ *  5. RECYCLE_BIN  : Tempat sampah tautan yang dihapus
+ *  6. ANALYTICS    : Log kunjungan & klik tautan
+ * ============================================================================
  */
 
+// Nama-nama sheet standar
+const SHEETS = {
+  SETTINGS: 'SETTINGS',
+  USERS: 'USERS',
+  PROJECTS: 'PROJECTS',
+  LINKS: 'LINKS',
+  RECYCLE_BIN: 'RECYCLE_BIN',
+  ANALYTICS: 'ANALYTICS'
+};
+
 /**
- * Endpoint Utama GET:
- * Melayani antarmuka Web App atau mengembalikan data JSON jika diminta.
+ * Endpoint Utama Web App (doGet)
+ * Menampilkan antarmuka HTML atau melayani data publik jika diminta via URL
  */
 function doGet(e) {
-  setupDatabase();
+  // Pastikan struktur sheet tersedia sebelum melayani request
+  initDatabaseTables();
 
-  if (e && e.parameter && e.parameter.action === 'getAppData') {
-    var data = getAppData();
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: true, data: data }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
+  const template = HtmlService.createTemplateFromFile('index');
+  
+  // Masukkan metadata deployment agar client bisa mendeteksi URL resmi
+  template.webAppUrl = getWebAppPublicUrl();
+  template.requestedBio = (e && e.parameter && e.parameter.bio) ? e.parameter.bio : '';
 
-  var html = HtmlService.createHtmlOutputFromFile('index');
-  html.setTitle('Bio Link Pro Dashboard');
-  html.addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
-  html.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-  return html;
+  return template.evaluate()
+    .setTitle('KSL Bio Link - Multi-Project Manager')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /**
- * Konfigurasi Otomatis Database (Zero-Config Setup):
- * Membuat Sheet 'Profile' dan 'Links' secara otomatis dengan header lengkap.
+ * Menyertakan file parsial (jika menggunakan pemisahan modular di Apps Script)
  */
-function setupDatabase() {
-  var lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(10000);
-  } catch (e) {
-    Logger.log('Lock timeout saat setupDatabase');
-  }
-
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    // 1. Inisialisasi Sheet 'Profile'
-    var profileSheet = ss.getSheetByName('Profile');
-    if (!profileSheet) {
-      profileSheet = ss.insertSheet('Profile');
-      profileSheet.appendRow(['Key', 'Value']);
-      profileSheet.appendRow(['Name', 'Nama Anda']);
-      profileSheet.appendRow(['Bio', 'Digital Creator & Innovator']);
-      profileSheet.appendRow(['Avatar', 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%2394A3B8\'><path d=\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z\'/></svg>']);
-      profileSheet.appendRow(['Background', 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)']);
-      profileSheet.appendRow(['Password', 'admin']);
-      profileSheet.appendRow(['FontFamily', "'Inter', sans-serif"]);
-      profileSheet.appendRow(['FontSize', '16px']);
-      profileSheet.appendRow(['TextColor', '#000000']);
-      profileSheet.appendRow(['ButtonTextColor', '#ffffff']);
-      profileSheet.appendRow(['VerifiedBadge', 'true']);
-      
-      profileSheet.getRange("A1:B1").setFontWeight("bold");
-      profileSheet.setFrozenRows(1);
-    }
-
-    // 2. Inisialisasi Sheet 'Links'
-    var linksSheet = ss.getSheetByName('Links');
-    if (!linksSheet) {
-      linksSheet = ss.insertSheet('Links');
-      linksSheet.appendRow(['ID', 'Type', 'Title', 'URL', 'Icon', 'Content', 'Color', 'Effect', 'Active', 'Shape', 'Password']);
-      linksSheet.getRange("A1:K1").setFontWeight("bold");
-      linksSheet.setFrozenRows(1);
-    }
-
-  } finally {
-    lock.releaseLock();
-  }
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 /**
- * Menyimpan data Base64 ke Google Drive secara otomatis
- * Menghindari limitasi sel 50.000 karakter pada Google Sheets
+ * Mendapatkan URL deployment Web App resmi saat ini
  */
-function saveMediaToDriveIfBase64(base64Data, prefix) {
-  if (!base64Data || typeof base64Data !== 'string' || !base64Data.startsWith('data:image')) {
-    return base64Data;
-  }
+function getWebAppPublicUrl() {
   try {
-    var folderName = "BioLink_Media_Storage";
-    var folders = DriveApp.getFoldersByName(folderName);
-    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
-    folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
-    var parts = base64Data.split(',');
-    var header = parts[0];
-    var data = parts[1];
-    var mime = header.split(':')[1].split(';')[0];
-    var ext = mime.split('/')[1] || 'jpg';
-    
-    var decoded = Utilities.base64Decode(data);
-    var blob = Utilities.newBlob(decoded, mime, (prefix || 'media') + '_' + Date.now() + '.' + ext);
-    var file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
-    return "https://lh3.googleusercontent.com/d/" + file.getId();
+    return ScriptApp.getService().getUrl() || '';
   } catch (err) {
-    Logger.log("Drive storage error: " + err);
-    return base64Data;
+    return '';
   }
 }
 
 /**
- * Membuat ID Unik Komponen
+ * ============================================================================
+ * 1. INISIALISASI DATABASE SHEET OTOMATIS
+ * ============================================================================
  */
-function generateId() {
-  return 'c_' + Math.random().toString(36).substring(2, 11);
+function initDatabaseTables() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // 1. Sheet USERS
+  let userSheet = ss.getSheetByName(SHEETS.USERS);
+  if (!userSheet) {
+    userSheet = ss.insertSheet(SHEETS.USERS);
+    userSheet.appendRow(['ID_USER', 'NAME', 'EMAIL', 'PASSWORD', 'ROLE', 'CREATED_AT']);
+    userSheet.appendRow([
+      'USR-' + Utilities.getUuid().slice(0, 8),
+      'Super Administrator',
+      'admin@ksl.local',
+      'admin',
+      'SUPER_ADMIN',
+      new Date().toISOString()
+    ]);
+    formatHeaderRow(userSheet);
+  }
+
+  // 2. Sheet PROJECTS (Multi Bio)
+  let projSheet = ss.getSheetByName(SHEETS.PROJECTS);
+  if (!projSheet) {
+    projSheet = ss.insertSheet(SHEETS.PROJECTS);
+    projSheet.appendRow([
+      'ID_PROJECT', 'SLUG', 'NAME', 'BIO', 'AVATAR_URL',
+      'BG_COLOR', 'TEXT_COLOR', 'CUSTOM_BG_IMAGE', 'FOOTER_TEXT',
+      'FONT_FAMILY', 'BTN_TYPE', 'BTN_EFFECT', 'UPDATED_AT'
+    ]);
+    projSheet.appendRow([
+      'bio-utama',
+      'utama',
+      'Kucing Storia Labs',
+      'Penyedia Solusi Web App, Google Apps Script, Dashboard Multi Bio Link & Automasi Bisnis.',
+      'https://placehold.co/140x140/2563eb/ffffff?text=KSL',
+      '#f8fafc',
+      '#0f172a',
+      '',
+      'Powered by <strong>KSL Bio Link v5.0</strong>',
+      "'Plus Jakarta Sans', sans-serif",
+      'btn-shape-rounded',
+      'btn-effect-lift',
+      new Date().toISOString()
+    ]);
+    formatHeaderRow(projSheet);
+  }
+
+  // 3. Sheet LINKS (URL opsional / kondisional)
+  let linkSheet = ss.getSheetByName(SHEETS.LINKS);
+  if (!linkSheet) {
+    linkSheet = ss.insertSheet(SHEETS.LINKS);
+    linkSheet.appendRow([
+      'ID_LINK', 'ID_PROJECT', 'ORDER_NUM', 'TITLE', 'URL', 'ICON',
+      'STATUS', 'CTA_TYPE', 'CAMPAIGN', 'FEATURED', 'LOCKED', 'PASSWORD',
+      'CLICKS', 'START_AT', 'END_AT', 'UPDATED_AT'
+    ]);
+    
+    // Seed tautan awal demo
+    const defaultLinks = [
+      ['LNK-01', 'bio-utama', 1, 'Download Dashboard Generate Ver 2', 'https://drive.google.com/', '🔗', 'ACTIVE', 'DOWNLOAD', 'Source Code Dashboard', 'NO', 'NO', '', 2, '', '', new Date().toISOString()],
+      ['LNK-02', 'bio-utama', 2, 'KSL Desaku Ver 1 ⭐ ⭐', 'https://youtube.com/', '▶️', 'ACTIVE', 'YOUTUBE', 'Launch Desaku Ver 1', 'YES', 'NO', '', 3, '', '', new Date().toISOString()],
+      ['LNK-03', 'bio-utama', 3, 'KSL KasirKu Ver7 🔒', 'https://youtube.com/', '💻', 'ACTIVE', 'YOUTUBE', 'Launch KasirKu Ver 7', 'NO', 'YES', '123', 0, '', '', new Date().toISOString()],
+      ['LNK-04', 'bio-utama', 4, 'Playlist Kas RT', 'https://youtube.com/', '🎬', 'ACTIVE', 'LINK', '', 'NO', 'NO', '', 13, '', '', new Date().toISOString()]
+    ];
+    defaultLinks.forEach(row => linkSheet.appendRow(row));
+    formatHeaderRow(linkSheet);
+  }
+
+  // 4. Sheet RECYCLE_BIN
+  let recycleSheet = ss.getSheetByName(SHEETS.RECYCLE_BIN);
+  if (!recycleSheet) {
+    recycleSheet = ss.insertSheet(SHEETS.RECYCLE_BIN);
+    recycleSheet.appendRow([
+      'ID_LINK', 'ID_PROJECT', 'ORDER_NUM', 'TITLE', 'URL', 'ICON',
+      'STATUS', 'CTA_TYPE', 'CAMPAIGN', 'FEATURED', 'LOCKED', 'PASSWORD',
+      'CLICKS', 'DELETED_AT'
+    ]);
+    formatHeaderRow(recycleSheet);
+  }
+
+  // 5. Sheet ANALYTICS
+  let analyticsSheet = ss.getSheetByName(SHEETS.ANALYTICS);
+  if (!analyticsSheet) {
+    analyticsSheet = ss.insertSheet(SHEETS.ANALYTICS);
+    analyticsSheet.appendRow(['TIMESTAMP', 'EVENT_TYPE', 'ID_PROJECT', 'ID_LINK', 'USER_AGENT']);
+    formatHeaderRow(analyticsSheet);
+  }
+
+  // 6. Sheet SETTINGS
+  let settingsSheet = ss.getSheetByName(SHEETS.SETTINGS);
+  if (!settingsSheet) {
+    settingsSheet = ss.insertSheet(SHEETS.SETTINGS);
+    settingsSheet.appendRow(['KEY', 'VALUE', 'DESCRIPTION']);
+    settingsSheet.appendRow(['TOTAL_PAGE_VIEWS', '125', 'Total akumulasi kunjungan profil bio']);
+    settingsSheet.appendRow(['APP_VERSION', '5.1.0', 'Versi build aplikasi']);
+    formatHeaderRow(settingsSheet);
+  }
+}
+
+function formatHeaderRow(sheet) {
+  const header = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+  header.setBackground('#1e293b')
+        .setFontColor('#ffffff')
+        .setFontWeight('bold')
+        .setFontFamily('Arial');
+  sheet.setFrozenRows(1);
 }
 
 /**
- * Mengambil Seluruh Data Profil & Daftar Komponen Terkini
+ * ============================================================================
+ * 2. AUTENTIKASI ADMINISTRATOR
+ * ============================================================================
  */
-function getAppData() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+function apiLoginAdmin(email, password) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.USERS);
+    if (!sheet) return { success: false, message: 'Database USERS tidak ditemukan.' };
 
-  // Membaca Konfigurasi Profil
-  var profileSheet = ss.getSheetByName('Profile');
-  var profileData = profileSheet ? profileSheet.getDataRange().getValues() : [];
-  var profile = {};
-  for (var i = 1; i < profileData.length; i++) {
-    if (profileData[i][0]) {
-      profile[profileData[i][0]] = profileData[i][1];
-      // Menyediakan alias lowercase untuk kompatibilitas mutlak
-      var k = String(profileData[i][0]).toLowerCase();
-      profile[k] = profileData[i][1];
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const userEmail = String(data[i][2]).toLowerCase().trim();
+      const userPass = String(data[i][3]).trim();
+
+      if (userEmail === String(email).toLowerCase().trim() && userPass === String(password).trim()) {
+        const token = Utilities.base64Encode(Utilities.getUuid() + ':' + data[i][0]);
+        return {
+          success: true,
+          token: token,
+          user: {
+            id: data[i][0],
+            name: data[i][1],
+            email: data[i][2],
+            role: data[i][4]
+          }
+        };
+      }
     }
+    return { success: false, message: 'Email atau kata sandi tidak valid.' };
+  } catch (err) {
+    return { success: false, message: err.toString() };
   }
+}
 
-  // Membaca Daftar Komponen
-  var linksSheet = ss.getSheetByName('Links');
-  var linksData = linksSheet ? linksSheet.getDataRange().getValues() : [];
-  var links = [];
-  for (var j = 1; j < linksData.length; j++) {
-    if (linksData[j][0]) {
-      links.push({
-        id: String(linksData[j][0]),
-        type: String(linksData[j][1] || 'link'),
-        title: String(linksData[j][2] || ''),
-        url: String(linksData[j][3] || ''),
-        icon: String(linksData[j][4] || ''),
-        content: String(linksData[j][5] || ''),
-        color: String(linksData[j][6] || '#4F46E5'),
-        effect: String(linksData[j][7] || 'btn-effect-scale'),
-        active: String(linksData[j][8]).toUpperCase() !== 'FALSE',
-        shape: String(linksData[j][9] || 'rounded-2xl'),
-        password: String(linksData[j][10] || '')
+/**
+ * ============================================================================
+ * 3. PENGAMBILAN DATA KESELURUHAN (GET COMPLETE STATE)
+ * ============================================================================
+ */
+function apiGetFullAppState() {
+  try {
+    initDatabaseTables();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 1. Ambil Semua Project
+    const projSheet = ss.getSheetByName(SHEETS.PROJECTS);
+    const projData = projSheet.getDataRange().getValues();
+    const projects = [];
+
+    for (let i = 1; i < projData.length; i++) {
+      projects.push({
+        id: String(projData[i][0]),
+        slug: String(projData[i][1]),
+        name: String(projData[i][2]),
+        bio: String(projData[i][3]),
+        avatarUrl: String(projData[i][4]),
+        bgColor: String(projData[i][5] || '#f8fafc'),
+        textColor: String(projData[i][6] || '#0f172a'),
+        customBgImage: String(projData[i][7] || ''),
+        footerText: String(projData[i][8] || 'Powered by <strong>KSL Bio Link v5.0</strong>'),
+        fontFamily: String(projData[i][9] || "'Plus Jakarta Sans', sans-serif"),
+        btnType: String(projData[i][10] || 'btn-shape-rounded'),
+        btnEffect: String(projData[i][11] || 'btn-effect-lift'),
+        links: []
       });
     }
-  }
 
-  return {
-    profile: profile,
-    links: links
-  };
-}
+    // 2. Ambil Semua Links Aktif
+    const linkSheet = ss.getSheetByName(SHEETS.LINKS);
+    const linkData = linkSheet.getDataRange().getValues();
 
-/**
- * Verifikasi Kata Sandi Admin
- */
-function verifyAuth(password) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var profileSheet = ss.getSheetByName('Profile');
-  if (!profileSheet) return false;
-  var data = profileSheet.getDataRange().getValues();
+    for (let j = 1; j < linkData.length; j++) {
+      const projId = String(linkData[j][1]);
+      const parentProj = projects.find(p => p.id === projId);
 
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] === 'Password') {
-      return String(data[i][1]) === String(password);
-    }
-  }
-  return false;
-}
+      const linkObj = {
+        id: String(linkData[j][0]),
+        order: Number(linkData[j][2]) || 1,
+        title: String(linkData[j][3]),
+        url: String(linkData[j][4] || ''),
+        icon: String(linkData[j][5] || '🔗'),
+        status: String(linkData[j][6] || 'ACTIVE'),
+        ctaType: String(linkData[j][7] || 'LINK'),
+        campaign: String(linkData[j][8] || ''),
+        featured: String(linkData[j][9]).toUpperCase() === 'YES',
+        locked: String(linkData[j][10]).toUpperCase() === 'YES',
+        password: String(linkData[j][11] || ''),
+        clicks: Number(linkData[j][12]) || 0,
+        startAt: String(linkData[j][13] || ''),
+        endAt: String(linkData[j][14] || '')
+      };
 
-/**
- * Menyimpan & Memperbarui Pengaturan Profil Permanen
- */
-function saveProfile(name, bio, avatar, password, background, fontFamily, fontSize, textColor, buttonTextColor, verifiedBadge) {
-  var lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(10000);
-  } catch (e) {
-    return { success: false, message: 'Server sibuk. Silakan coba kembali.' };
-  }
-
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName('Profile');
-    if (!sheet) {
-      setupDatabase();
-      sheet = ss.getSheetByName('Profile');
-    }
-
-    var savedAvatar = saveMediaToDriveIfBase64(avatar, 'avatar');
-    var savedBg = saveMediaToDriveIfBase64(background, 'bg');
-
-    var data = sheet.getDataRange().getValues();
-    var keyRowMap = {};
-    for (var i = 1; i < data.length; i++) {
-      keyRowMap[data[i][0]] = i + 1;
-    }
-
-    function updateOrAdd(key, value) {
-      if (value === undefined || value === null) return;
-      if (keyRowMap[key]) {
-        sheet.getRange(keyRowMap[key], 2).setValue(value);
-      } else {
-        sheet.appendRow([key, value]);
+      if (parentProj) {
+        parentProj.links.push(linkObj);
       }
     }
 
-    updateOrAdd('Name', name);
-    updateOrAdd('Bio', bio);
-    updateOrAdd('Avatar', savedAvatar);
-    updateOrAdd('Background', savedBg);
-    updateOrAdd('FontFamily', fontFamily);
-    updateOrAdd('FontSize', fontSize);
-    updateOrAdd('TextColor', textColor);
-    updateOrAdd('ButtonTextColor', buttonTextColor);
-    updateOrAdd('VerifiedBadge', verifiedBadge || 'true');
+    // 3. Ambil Recycle Bin
+    const recycleSheet = ss.getSheetByName(SHEETS.RECYCLE_BIN);
+    const recycleData = recycleSheet.getDataRange().getValues();
+    const recycleBin = [];
 
-    if (password && String(password).trim() !== '') {
-      updateOrAdd('Password', String(password).trim());
+    for (let k = 1; k < recycleData.length; k++) {
+      recycleBin.push({
+        id: String(recycleData[k][0]),
+        projectId: String(recycleData[k][1]),
+        order: Number(recycleData[k][2]) || 1,
+        title: String(recycleData[k][3]),
+        url: String(recycleData[k][4] || ''),
+        icon: String(recycleData[k][5]),
+        status: String(recycleData[k][6]),
+        ctaType: String(recycleData[k][7]),
+        campaign: String(recycleData[k][8]),
+        featured: String(recycleData[k][9]).toUpperCase() === 'YES',
+        locked: String(recycleData[k][10]).toUpperCase() === 'YES',
+        password: String(recycleData[k][11]),
+        clicks: Number(recycleData[k][12]) || 0,
+        deletedAt: String(recycleData[k][13])
+      });
     }
 
-    return { 
-      success: true, 
-      message: 'Profil berhasil diperbarui secara permanen',
-      data: {
-        Avatar: savedAvatar,
-        Background: savedBg
+    // 4. Ambil Daftar Pengguna
+    const userSheet = ss.getSheetByName(SHEETS.USERS);
+    const userData = userSheet.getDataRange().getValues();
+    const adminUsers = [];
+
+    for (let u = 1; u < userData.length; u++) {
+      adminUsers.push({
+        id: String(userData[u][0]),
+        name: String(userData[u][1]),
+        email: String(userData[u][2]),
+        role: String(userData[u][4])
+      });
+    }
+
+    // 5. Total Page Views
+    const settingsSheet = ss.getSheetByName(SHEETS.SETTINGS);
+    const settingsData = settingsSheet.getDataRange().getValues();
+    let totalViews = 125;
+    for (let s = 1; s < settingsData.length; s++) {
+      if (String(settingsData[s][0]) === 'TOTAL_PAGE_VIEWS') {
+        totalViews = Number(settingsData[s][1]) || 0;
+        break;
       }
+    }
+
+    return {
+      success: true,
+      bioProjects: projects,
+      linksRecycleBin: recycleBin,
+      adminUsers: adminUsers,
+      analyticsViews: totalViews
     };
-
   } catch (err) {
     return { success: false, message: err.toString() };
-  } finally {
-    lock.releaseLock();
   }
 }
 
 /**
- * Menyimpan Komponen Baru atau Mengubah Komponen yang Ada
+ * ============================================================================
+ * 4. PENGELOLAAN LINK (SAVE / REORDER / DELETE / RESTORE)
+ * ============================================================================
  */
-function saveComponent(id, type, title, url, icon, content, color, effect, active, shape, password) {
-  var lock = LockService.getScriptLock();
+function apiSaveLink(linkData, projectId) {
   try {
-    lock.waitLock(10000);
-  } catch (e) {
-    return { success: false, message: 'Server sibuk. Silakan coba kembali.' };
-  }
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.LINKS);
+    const rows = sheet.getDataRange().getValues();
 
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName('Links');
-    if (!sheet) {
-      setupDatabase();
-      sheet = ss.getSheetByName('Links');
-    }
+    const linkId = linkData.id || ('LNK-' + Utilities.getUuid().slice(0, 8).toUpperCase());
+    const featured = linkData.featured ? 'YES' : 'NO';
+    const locked = linkData.locked ? 'YES' : 'NO';
+    const now = new Date().toISOString();
 
-    var savedIcon = saveMediaToDriveIfBase64(icon, 'icon');
-    var savedUrl = (type === 'image') ? saveMediaToDriveIfBase64(url, 'banner') : (url || '');
-
-    var activeStr = (active === false || active === 'false') ? 'FALSE' : 'TRUE';
-    var targetId = id || generateId();
-    var data = sheet.getDataRange().getValues();
-
-    // Pembaruan baris data jika ID sudah ada
-    for (var i = 1; i < data.length; i++) {
-      if (String(data[i][0]) === String(targetId)) {
-        sheet.getRange(i + 1, 2, 1, 10).setValues([[
-          type || 'link',
-          title || '',
-          savedUrl,
-          savedIcon,
-          content || '',
-          color || '#4F46E5',
-          effect || 'btn-effect-scale',
-          activeStr,
-          shape || 'rounded-2xl',
-          password || ''
-        ]]);
-        return { success: true, id: targetId, icon: savedIcon, url: savedUrl };
+    let foundRowIndex = -1;
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(linkId)) {
+        foundRowIndex = i + 1; // 1-indexed
+        break;
       }
     }
 
-    // Tambah baris baru jika ID belum ada
-    sheet.appendRow([
-      targetId,
-      type || 'link',
-      title || '',
-      savedUrl,
-      savedIcon,
-      content || '',
-      color || '#4F46E5',
-      effect || 'btn-effect-scale',
-      activeStr,
-      shape || 'rounded-2xl',
-      password || ''
-    ]);
-    return { success: true, id: targetId, icon: savedIcon, url: savedUrl };
+    const rowPayload = [
+      linkId,
+      projectId,
+      Number(linkData.order) || 1,
+      linkData.title || '',
+      linkData.url || '', // Kondisional (bisa kosong)
+      linkData.icon || '🔗',
+      linkData.status || 'ACTIVE',
+      linkData.ctaType || 'LINK',
+      linkData.campaign || '',
+      featured,
+      locked,
+      linkData.password || '',
+      Number(linkData.clicks) || 0,
+      linkData.startAt || '',
+      linkData.endAt || '',
+      now
+    ];
 
+    if (foundRowIndex > 0) {
+      sheet.getRange(foundRowIndex, 1, 1, rowPayload.length).setValues([rowPayload]);
+    } else {
+      sheet.appendRow(rowPayload);
+    }
+
+    return { success: true, id: linkId };
   } catch (err) {
     return { success: false, message: err.toString() };
-  } finally {
-    lock.releaseLock();
   }
 }
 
-/**
- * Memperbarui Urutan Baris Komponen (Drag & Drop) Secara Permanen
- */
-function updateComponentOrder(newIds) {
-  var lock = LockService.getScriptLock();
+function apiReorderLinks(orderedList) {
   try {
-    lock.waitLock(10000);
-  } catch (e) {
-    return { success: false, message: 'Server lock timeout.' };
-  }
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.LINKS);
+    const data = sheet.getDataRange().getValues();
 
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName('Links');
-    if (!sheet || !newIds || !newIds.length) return { success: false };
-
-    var data = sheet.getDataRange().getValues();
-    if (data.length <= 1) return { success: true };
-
-    var rows = data.slice(1);
-    var rowMap = {};
-    for (var i = 0; i < rows.length; i++) {
-      rowMap[String(rows[i][0])] = rows[i];
-    }
-
-    var newRows = [];
-    for (var j = 0; j < newIds.length; j++) {
-      var currentId = String(newIds[j]);
-      if (rowMap[currentId]) {
-        newRows.push(rowMap[currentId]);
+    orderedList.forEach(item => {
+      for (let i = 1; i < data.length; i++) {
+        if (String(data[i][0]) === String(item.id)) {
+          sheet.getRange(i + 1, 3).setValue(Number(item.order));
+          break;
+        }
       }
-    }
-
-    // Pastikan jika ada row yang belum tercakup di newIds tetap dipertahankan di bawah
-    for (var k = 0; k < rows.length; k++) {
-      var existId = String(rows[k][0]);
-      if (newIds.indexOf(existId) === -1) {
-        newRows.push(rows[k]);
-      }
-    }
-
-    if (newRows.length > 0) {
-      var totalRows = sheet.getLastRow();
-      if (totalRows > 1) {
-        sheet.getRange(2, 1, totalRows - 1, sheet.getLastColumn()).clearContent();
-      }
-      sheet.getRange(2, 1, newRows.length, newRows[0].length).setValues(newRows);
-    }
+    });
 
     return { success: true };
-
   } catch (err) {
     return { success: false, message: err.toString() };
-  } finally {
-    lock.releaseLock();
   }
 }
 
-/**
- * Menghapus Baris Komponen Berdasarkan ID
- */
-function deleteLink(id) {
-  var lock = LockService.getScriptLock();
+function apiMoveLinkToRecycleBin(linkId) {
   try {
-    lock.waitLock(10000);
-  } catch (e) {
-    return { success: false, message: 'Server lock timeout.' };
-  }
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const linkSheet = ss.getSheetByName(SHEETS.LINKS);
+    const recycleSheet = ss.getSheetByName(SHEETS.RECYCLE_BIN);
 
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName('Links');
-    if (!sheet) return { success: false };
-    var data = sheet.getDataRange().getValues();
-
-    for (var i = 1; i < data.length; i++) {
-      if (String(data[i][0]) === String(id)) {
-        sheet.deleteRow(i + 1);
+    const data = linkSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(linkId)) {
+        const deletedRow = [
+          data[i][0], data[i][1], data[i][2], data[i][3], data[i][4],
+          data[i][5], data[i][6], data[i][7], data[i][8], data[i][9],
+          data[i][10], data[i][11], data[i][12], new Date().toLocaleString('id-ID')
+        ];
+        recycleSheet.appendRow(deletedRow);
+        linkSheet.deleteRow(i + 1);
         return { success: true };
       }
     }
-    return { success: false, message: 'ID komponen tidak ditemukan' };
-
+    return { success: false, message: 'Link tidak ditemukan.' };
   } catch (err) {
     return { success: false, message: err.toString() };
-  } finally {
-    lock.releaseLock();
+  }
+}
+
+function apiRestoreLink(linkId) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const linkSheet = ss.getSheetByName(SHEETS.LINKS);
+    const recycleSheet = ss.getSheetByName(SHEETS.RECYCLE_BIN);
+
+    const data = recycleSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(linkId)) {
+        const restoredRow = [
+          data[i][0], data[i][1], data[i][2], data[i][3], data[i][4],
+          data[i][5], data[i][6], data[i][7], data[i][8], data[i][9],
+          data[i][10], data[i][11], data[i][12], '', '', new Date().toISOString()
+        ];
+        linkSheet.appendRow(restoredRow);
+        recycleSheet.deleteRow(i + 1);
+        return { success: true };
+      }
+    }
+    return { success: false, message: 'Item di recycle bin tidak ditemukan.' };
+  } catch (err) {
+    return { success: false, message: err.toString() };
+  }
+}
+
+function apiPermanentDelete(linkId) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const recycleSheet = ss.getSheetByName(SHEETS.RECYCLE_BIN);
+
+    const data = recycleSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(linkId)) {
+        recycleSheet.deleteRow(i + 1);
+        return { success: true };
+      }
+    }
+    return { success: false, message: 'Item tidak ditemukan.' };
+  } catch (err) {
+    return { success: false, message: err.toString() };
   }
 }
 
 /**
- * Endpoint Utama POST:
- * Menerima payload JSON dari panggilan fetch() asinkron frontend.
+ * ============================================================================
+ * 5. PENGELOLAAN PROJECT MULTI-BIO & PENGATURAN TAMPILAN
+ * ============================================================================
  */
-function doPost(e) {
+function apiSaveProject(project) {
   try {
-    setupDatabase();
-    var payload = {};
-    if (e && e.postData && e.postData.contents) {
-      payload = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.PROJECTS);
+    const rows = sheet.getDataRange().getValues();
+
+    const projId = project.id || ('bio-' + Utilities.getUuid().slice(0, 8));
+    const now = new Date().toISOString();
+
+    let foundIndex = -1;
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(projId)) {
+        foundIndex = i + 1;
+        break;
+      }
     }
 
-    var action = payload.action;
-    var result = { success: false, message: 'Aksi tidak valid' };
+    const rowPayload = [
+      projId,
+      project.slug || 'bio',
+      project.name || 'Bio Name',
+      project.bio || '',
+      project.avatarUrl || 'https://placehold.co/140x140/2563eb/ffffff?text=KSL',
+      project.bgColor || '#f8fafc',
+      project.textColor || '#0f172a',
+      project.customBgImage || '',
+      project.footerText || 'Powered by <strong>KSL Bio Link v5.0</strong>',
+      project.fontFamily || "'Plus Jakarta Sans', sans-serif",
+      project.btnType || 'btn-shape-rounded',
+      project.btnEffect || 'btn-effect-lift',
+      now
+    ];
 
-    if (action === 'getAppData') {
-      result = { success: true, data: getAppData() };
-    } else if (action === 'verifyAuth') {
-      var isAuth = verifyAuth(payload.password);
-      result = { success: isAuth, message: isAuth ? 'Autentikasi berhasil' : 'Kata sandi salah' };
-    } else if (action === 'saveProfile') {
-      result = saveProfile(
-        payload.Name || payload.name, 
-        payload.Bio || payload.bio, 
-        payload.Avatar || payload.avatar, 
-        payload.Password || payload.password,
-        payload.Background || payload.background, 
-        payload.FontFamily || payload.fontFamily, 
-        payload.FontSize || payload.fontSize, 
-        payload.TextColor || payload.textColor,
-        payload.ButtonTextColor || payload.buttonTextColor,
-        payload.VerifiedBadge || (payload.verified ? 'true' : 'false')
-      );
-    } else if (action === 'saveComponent') {
-      result = saveComponent(
-        payload.id, payload.type, payload.title, payload.url,
-        payload.icon, payload.content, payload.color, payload.effect, payload.active,
-        payload.shape, payload.password
-      );
-    } else if (action === 'updateOrder') {
-      result = updateComponentOrder(payload.newIds);
-    } else if (action === 'deleteLink') {
-      result = deleteLink(payload.id);
+    if (foundIndex > 0) {
+      sheet.getRange(foundIndex, 1, 1, rowPayload.length).setValues([rowPayload]);
+    } else {
+      sheet.appendRow(rowPayload);
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return { success: true, id: projId };
   } catch (err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return { success: false, message: err.toString() };
+  }
+}
+
+function apiDeleteProject(projectId) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const projSheet = ss.getSheetByName(SHEETS.PROJECTS);
+    const linkSheet = ss.getSheetByName(SHEETS.LINKS);
+
+    // Hapus project
+    const pData = projSheet.getDataRange().getValues();
+    for (let i = 1; i < pData.length; i++) {
+      if (String(pData[i][0]) === String(projectId)) {
+        projSheet.deleteRow(i + 1);
+        break;
+      }
+    }
+
+    // Hapus tautan yang terafiliasi dengan project ini
+    const lData = linkSheet.getDataRange().getValues();
+    for (let j = lData.length - 1; j >= 1; j--) {
+      if (String(lData[j][1]) === String(projectId)) {
+        linkSheet.deleteRow(j + 1);
+      }
+    }
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, message: err.toString() };
+  }
+}
+
+function apiSaveAppearance(appearance, projectId) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.PROJECTS);
+    const rows = sheet.getDataRange().getValues();
+
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(projectId)) {
+        if (appearance.bgColor) sheet.getRange(i + 1, 6).setValue(appearance.bgColor);
+        if (appearance.textColor) sheet.getRange(i + 1, 7).setValue(appearance.textColor);
+        if (appearance.customBgImage !== undefined) sheet.getRange(i + 1, 8).setValue(appearance.customBgImage);
+        if (appearance.footerText) sheet.getRange(i + 1, 9).setValue(appearance.footerText);
+        if (appearance.fontFamily) sheet.getRange(i + 1, 10).setValue(appearance.fontFamily);
+        if (appearance.btnType) sheet.getRange(i + 1, 11).setValue(appearance.btnType);
+        if (appearance.btnEffect) sheet.getRange(i + 1, 12).setValue(appearance.btnEffect);
+        if (appearance.avatarUrl) sheet.getRange(i + 1, 5).setValue(appearance.avatarUrl);
+        sheet.getRange(i + 1, 13).setValue(new Date().toISOString());
+        return { success: true };
+      }
+    }
+    return { success: false, message: 'Project tidak ditemukan.' };
+  } catch (err) {
+    return { success: false, message: err.toString() };
+  }
+}
+
+/**
+ * ============================================================================
+ * 6. LOGGING KLIK & ANALYTICS
+ * ============================================================================
+ */
+function apiIncrementClick(linkId, projectId) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const linkSheet = ss.getSheetByName(SHEETS.LINKS);
+    const data = linkSheet.getDataRange().getValues();
+
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(linkId)) {
+        const currentClicks = Number(data[i][12]) || 0;
+        linkSheet.getRange(i + 1, 13).setValue(currentClicks + 1);
+        break;
+      }
+    }
+
+    // Catat log klik di sheet ANALYTICS
+    const analyticsSheet = ss.getSheetByName(SHEETS.ANALYTICS);
+    if (analyticsSheet) {
+      analyticsSheet.appendRow([
+        new Date().toISOString(),
+        'LINK_CLICK',
+        projectId || '',
+        linkId,
+        ''
+      ]);
+    }
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, message: err.toString() };
   }
 }
