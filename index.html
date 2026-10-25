@@ -1377,6 +1377,7 @@
     let pendingProtectedTarget = null;
 
     function loadAppState() {
+      // 1. Muat cache offline lokal sementara agar tampilan cepat terbuka
       try {
         const stored = localStorage.getItem('KSL_BIO_LINK_V5_STATE');
         if (stored) {
@@ -1386,9 +1387,51 @@
             appState.activeBioId = parsed.activeBioId || parsed.bioProjects[0].id;
             if (Array.isArray(parsed.adminUsers)) appState.adminUsers = parsed.adminUsers;
             if (Array.isArray(parsed.linksRecycleBin)) appState.linksRecycleBin = parsed.linksRecycleBin;
+            if (typeof parsed.analyticsViews === 'number') appState.analyticsViews = parsed.analyticsViews;
           }
         }
       } catch (e) {}
+
+      // 2. AMBIL DATA REAL-TIME DARI GOOGLE SPREADSHEET (Lintas Perangkat)
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response && response.success) {
+              if (Array.isArray(response.bioProjects) && response.bioProjects.length > 0) {
+                appState.bioProjects = response.bioProjects;
+                if (!appState.bioProjects.some(p => p.id === appState.activeBioId)) {
+                  appState.activeBioId = appState.bioProjects[0].id;
+                }
+              }
+              if (Array.isArray(response.linksRecycleBin)) {
+                appState.linksRecycleBin = response.linksRecycleBin;
+              }
+              if (Array.isArray(response.adminUsers)) {
+                appState.adminUsers = response.adminUsers;
+              }
+              if (typeof response.analyticsViews === 'number') {
+                appState.analyticsViews = response.analyticsViews;
+              }
+
+              // Simpan ke cache lokal perangkat saat ini
+              saveAppState();
+
+              // Render ulang tampilan dengan data cloud terbaru
+              populateHeaderBioSelector();
+              renderPublicView();
+              renderLinksTable();
+              renderAppearanceFormValues();
+              renderMultiBioProjects();
+              renderOverviewStats();
+              renderRecycleBin();
+              renderAdminUsersList();
+            }
+          })
+          .withFailureHandler(function(err) {
+            console.warn('Gagal memuat data dari Spreadsheet:', err);
+          })
+          .apiGetFullAppState();
+      }
     }
 
     function saveAppState() {
@@ -1433,6 +1476,31 @@
       const email = document.getElementById('adminLoginEmail').value.trim().toLowerCase();
       const password = document.getElementById('adminLoginPassword').value.trim();
 
+      // Autentikasi real-time langsung ke Sheet USERS jika di Apps Script
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res && res.success) {
+              appState.isLoggedIn = true;
+              document.getElementById('adminUserNameDisplay').textContent = res.user.name;
+              document.getElementById('adminUserRoleBadge').textContent = res.user.role;
+              closeAdminLoginModal();
+              setAppViewMode('admin');
+              showToast('Login berhasil sebagai ' + res.user.name);
+            } else {
+              fallbackLocalLogin(email, password);
+            }
+          })
+          .withFailureHandler(function() {
+            fallbackLocalLogin(email, password);
+          })
+          .apiLoginAdmin(email, password);
+      } else {
+        fallbackLocalLogin(email, password);
+      }
+    }
+
+    function fallbackLocalLogin(email, password) {
       const matchedUser = appState.adminUsers.find(
         u => u.email.toLowerCase() === email && u.password === password
       );
@@ -1628,6 +1696,12 @@
     function openTargetUrl(link) {
       link.clicks = (Number(link.clicks) || 0) + 1;
       saveAppState();
+
+      // Sinkronisasi penambahan klik ke Spreadsheet
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.apiIncrementClick(link.id, appState.activeBioId);
+      }
+
       if (link.url && link.url.trim() !== '' && link.url.trim() !== '#') {
         window.open(link.url, '_blank', 'noopener,noreferrer');
       }
@@ -1705,6 +1779,8 @@
       const startAt = document.getElementById('inpLinkStartAt').value;
       const endAt = document.getElementById('inpLinkEndAt').value;
 
+      let linkPayload = null;
+
       if (editId) {
         const link = project.links.find(l => l.id === editId);
         if (link) {
@@ -1720,6 +1796,7 @@
           link.password = password;
           link.startAt = startAt;
           link.endAt = endAt;
+          linkPayload = link;
           showToast('Link berhasil diperbarui');
         }
       } else {
@@ -1729,12 +1806,25 @@
           startAt, endAt, clicks: 0
         };
         project.links.push(newLink);
+        linkPayload = newLink;
         showToast('Link baru berhasil ditambahkan');
       }
 
       saveAppState();
       resetLinkForm();
       renderLinksTable();
+
+      // SINKRONISASI KE GOOGLE SPREADSHEET (TAB LINKS)
+      if (linkPayload && typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function() {
+            showToast('Tersimpan di Google Sheets ☁️');
+          })
+          .withFailureHandler(function(err) {
+            console.warn('Gagal simpan ke Spreadsheet:', err);
+          })
+          .apiSaveLink(linkPayload, project.id);
+      }
     }
 
     function editLink(id) {
@@ -1803,6 +1893,11 @@
       saveAppState();
       renderLinksTable();
       showToast('Link dipindahkan ke Recycle Bin');
+
+      // SINKRONISASI KE SPREADSHEET (PINDAHKAN KE SHEET RECYCLE_BIN)
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.apiMoveLinkToRecycleBin(id);
+      }
     }
 
     function resetLinkForm() {
@@ -1979,16 +2074,25 @@
     function reindexTableOrder() {
       const project = getActiveProject();
       const rows = document.querySelectorAll('#linksTableBody tr');
+      const orderedPayload = [];
+
       rows.forEach((row, index) => {
         const id = row.dataset.id;
         const link = project.links.find(l => l.id === id);
         if (link) {
           link.order = index + 1;
+          orderedPayload.push({ id: link.id, order: link.order });
         }
       });
+
       saveAppState();
       renderLinksTable();
       showToast('Urutan baru tersimpan');
+
+      // SINKRONISASI URUTAN KE SPREADSHEET
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.apiReorderLinks(orderedPayload);
+      }
     }
 
     function handleSelectAllLinks(checked) {
@@ -2130,6 +2234,24 @@
       saveAppState();
       renderPublicView();
       showToast('Tampilan berhasil disimpan!');
+
+      // SINKRONISASI TAMPILAN KE SPREADSHEET (TAB PROJECTS)
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function() {
+            showToast('Tampilan tersinkron ke Cloud ☁️');
+          })
+          .apiSaveAppearance({
+            bgColor: project.bgColor,
+            textColor: project.textColor,
+            customBgImage: project.customBgImage || '',
+            footerText: project.footerText,
+            fontFamily: project.fontFamily,
+            btnType: project.btnType,
+            btnEffect: project.btnEffect,
+            avatarUrl: project.avatarUrl
+          }, project.id);
+      }
     }
 
     function initShareAndQrTab() {
@@ -2352,12 +2474,15 @@
       if (!name) return;
       if (!slug) slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
+      let targetProject = null;
+
       if (editId) {
         const proj = appState.bioProjects.find(p => p.id === editId);
         if (proj) {
           proj.name = name;
           proj.slug = slug;
           proj.bio = bio;
+          targetProject = proj;
           showToast('Bio "' + name + '" berhasil diperbarui!');
         }
       } else {
@@ -2370,11 +2495,15 @@
           bgColor: '#f8fafc',
           textColor: '#0f172a',
           footerText: 'Powered by <strong>KSL Bio Link v5.0</strong>',
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          btnType: 'btn-shape-rounded',
+          btnEffect: 'btn-effect-lift',
           links: []
         };
 
         appState.bioProjects.push(newProj);
         appState.activeBioId = newProj.id;
+        targetProject = newProj;
         showToast('Bio baru berhasil ditambahkan!');
       }
 
@@ -2384,6 +2513,43 @@
       renderMultiBioProjects();
       renderPublicView();
       renderLinksTable();
+
+      // SINKRONISASI BIO PROJECT KE SPREADSHEET (TAB PROJECTS)
+      if (targetProject && typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function() {
+            showToast('Bio tersimpan di Google Sheets ☁️');
+          })
+          .apiSaveProject(targetProject);
+      }
+    }
+
+    function handleDeleteBioProject(projId) {
+      if (appState.bioProjects.length <= 1) {
+        showToast('Minimal harus ada 1 bio project.');
+        return;
+      }
+      const target = appState.bioProjects.find(p => p.id === projId);
+      if (!target) return;
+
+      const idx = appState.bioProjects.findIndex(p => p.id === projId);
+      if (idx !== -1) {
+        appState.bioProjects.splice(idx, 1);
+        if (appState.activeBioId === projId) {
+          appState.activeBioId = appState.bioProjects[0].id;
+        }
+        saveAppState();
+        populateHeaderBioSelector();
+        renderMultiBioProjects();
+        renderPublicView();
+        renderLinksTable();
+        showToast('Bio "' + target.name + '" berhasil dihapus');
+
+        // SINKRONISASI HAPUS BIO DARI SPREADSHEET
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run.apiDeleteProject(projId);
+        }
+      }
     }
 
     function renderOverviewStats() {
@@ -2455,6 +2621,11 @@
       renderRecycleBin();
       renderLinksTable();
       showToast('Link berhasil dipulihkan');
+
+      // SINKRONISASI RESTORE KE SPREADSHEET
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.apiRestoreLink(id);
+      }
     }
 
     function permanentDeleteRecycle(id) {
@@ -2462,6 +2633,11 @@
       saveAppState();
       renderRecycleBin();
       showToast('Link dihapus permanen');
+
+      // SINKRONISASI HAPUS PERMANEN KE SPREADSHEET
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.apiPermanentDelete(id);
+      }
     }
 
     function renderAdminUsersList() {
